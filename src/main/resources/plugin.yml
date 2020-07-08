@@ -1,0 +1,10 @@
+name: EasyStructure
+version: ${project.version}
+main: net.teamfruit.easystructure.EasyStructure
+api-version: 1.15.2
+prefix: EasyStructure
+load: STARTUP
+depend: [WorldEdit]
+authors: [Kamesuta]
+description: Easy copy and paste
+website: https://www.teamfruit.net/
