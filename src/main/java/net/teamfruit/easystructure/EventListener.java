@@ -1,5 +1,6 @@
 package net.teamfruit.easystructure;
 
+import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -37,16 +38,18 @@ public class EventListener implements Listener {
                 continue;
 
             RayTraceResult rayResult = player.rayTraceBlocks(32, FluidCollisionMode.NEVER);
+
+            if (rayResult == null)
+                continue;
+
             Block hitBlock = rayResult.getHitBlock();
             BlockFace hitFace = rayResult.getHitBlockFace();
 
             if (hitBlock == null)
                 continue;
 
-            final int color = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);
-            final int color_r = (color << 16) & 0xff;
-            final int color_g = (color << 8) & 0xff;
-            final int color_b = (color << 0) & 0xff;
+            final int colorInt = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);
+            final Color color = Color.fromRGB(colorInt);
             final int range = plugin.getConfig().getInt(Config.SETTING_PARTICLE_RANGE);
             /*
             if (range > 0) {
@@ -58,7 +61,7 @@ public class EventListener implements Listener {
                 for (final Location block : blocks)
                     this.nativemc.spawnParticles(player, block, color_r / 255f, color_g / 255f, color_b / 255f);
             */
-            player.spawnParticle(Particle.REDSTONE, hitBlock.getLocation(), 1, color_r / 255f, color_g / 255f, color_b / 255f);
+            player.spawnParticle(Particle.REDSTONE, hitBlock.getLocation().clone().add(.5, .5, .5), 1, 0, 0, 0, new Particle.DustOptions(color, 1));
         }
     }
 
@@ -77,6 +80,10 @@ public class EventListener implements Listener {
             return;
 
         RayTraceResult rayResult = player.rayTraceBlocks(32, FluidCollisionMode.NEVER);
+
+        if (rayResult == null)
+            return;
+
         Block hitBlock = rayResult.getHitBlock();
         BlockFace hitFace = rayResult.getHitBlockFace();
 

@@ -64,7 +64,7 @@
                                     <type>${project.packaging}</type>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>./run/plugins</outputDirectory>
+                            <outputDirectory>./server/plugins</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
