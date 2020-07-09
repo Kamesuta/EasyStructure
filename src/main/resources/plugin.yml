@@ -8,3 +8,17 @@ depend: [WorldEdit]
 authors: [Kamesuta]
 description: Easy copy and paste
 website: https://www.teamfruit.net/
+
+commands:
+  es:
+    description: EasyStructure commands
+    usage: /es
+    aliases: easystructure
+    permission: es.create
+permissions:
+  es.use:
+    description: You can use Schematic
+    default: true
+  es.create:
+    description: You can create Schematic
+    default: op
