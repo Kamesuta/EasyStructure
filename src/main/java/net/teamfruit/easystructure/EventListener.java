@@ -88,6 +88,16 @@ public class EventListener implements Listener {
     }
 
     private ActionResult onPlayerUse(final Player player, ItemStack itemMain, final Action action, final Block target, final BlockFace face) {
+        if (player.isSneaking() && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
+            player.sendMessage("CREATE");
+            return ActionResult.success();
+        }
+
+        if (action == Action.RIGHT_CLICK_BLOCK) {
+            player.sendMessage("PLACE: " + target);
+            return ActionResult.success();
+        }
+
         return ActionResult.success();
     }
 }
