@@ -61,7 +61,7 @@ public class EventListener implements Listener {
                 for (final Location block : blocks)
                     this.nativemc.spawnParticles(player, block, color_r / 255f, color_g / 255f, color_b / 255f);
             */
-            player.spawnParticle(Particle.REDSTONE, hitBlock.getLocation().clone().add(.5, .5, .5), 1, 0, 0, 0, new Particle.DustOptions(color, 1));
+            player.spawnParticle(Particle.REDSTONE, hitBlock.getLocation().clone().add(hitFace.getDirection()).add(.5, .5, .5), 1, 0, 0, 0, new Particle.DustOptions(color, 1));
         }
     }
 
@@ -97,6 +97,7 @@ public class EventListener implements Listener {
     private ActionResult onPlayerUse(final Player player, ItemStack itemMain, final Action action, final Block target, final BlockFace face) {
         if (player.isSneaking() && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
             player.sendMessage("CREATE");
+            //itemMain.getItemMeta().
             return ActionResult.success();
         }
 
