@@ -76,9 +76,9 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                             .build()
                     )
                     .put("display", CompoundTagBuilder.create()
-                            .put("Name", new StringTag(String.format("{\"text\":\"%s\",\"color\":\"gray\",\"italic\":false}", uuid)))
+                            .put("Name", new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_green\",\"italic\":false}", title)))
                             .put("Lore", ListTagBuilder.create(StringTag.class)
-                                    .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"gray\",\"italic\":false}", uuid)))
+                                    .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_gray\",\"italic\":false}", uuid)))
                                     .build()
                             )
                             .build()
@@ -107,10 +107,10 @@ public class CommandListener implements CommandExecutor, TabCompleter {
             player.sendMessage("設計図" + (title != null ? "[" + title + "]" : "") + "を作成しました。");
         } catch (WorldEditException e) {
             Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
-            sender.sendMessage("WorldEditエラー: " + e.getMessage());
+            player.sendMessage("WorldEditエラー: " + e.getMessage());
         } catch (IOException e) {
             Log.log.log(Level.WARNING, "IO Error: ", e);
-            sender.sendMessage("セーブに失敗しました: " + e.getMessage());
+            player.sendMessage("セーブに失敗しました: " + e.getMessage());
         }
 
         return true;

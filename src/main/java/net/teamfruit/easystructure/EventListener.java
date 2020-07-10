@@ -1,9 +1,6 @@
 package net.teamfruit.easystructure;
 
-import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.CompoundTagBuilder;
-import com.sk89q.jnbt.ListTagBuilder;
-import com.sk89q.jnbt.StringTag;
+import com.sk89q.jnbt.*;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -13,14 +10,19 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitPlayer;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
-import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.*;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldedit.world.item.ItemTypes;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
@@ -39,12 +41,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Random;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class EventListener implements Listener {
     private final EasyStructure plugin;
+    private final Random random = new Random();
 
     public EventListener(EasyStructure plugin) {
         this.plugin = plugin;
@@ -87,7 +93,7 @@ public class EventListener implements Listener {
                 for (final Location block : blocks)
                     this.nativemc.spawnParticles(player, block, color_r / 255f, color_g / 255f, color_b / 255f);
             */
-            player.spawnParticle(Particle.REDSTONE, hitBlock.getLocation().clone().add(hitFace.getDirection()).add(.5, .5, .5), 1, 0, 0, 0, new Particle.DustOptions(color, 1));
+            player.spawnParticle(Particle.REDSTONE, hitBlock.getRelative(hitFace).getLocation().add(.5, .5, .5), 1, 0, 0, 0, new Particle.DustOptions(color, 1));
         }
     }
 
@@ -120,72 +126,61 @@ public class EventListener implements Listener {
             event.setCancelled(true);
     }
 
-    private ActionResult onPlayerUse(final Player player, ItemStack itemMain, final Action action, final Block target, final BlockFace face) {
-        if (player.isSneaking() && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
+    private ActionResult onPlayerUse(final Player player, ItemStack itemMain, final Action action, final Block target, final BlockFace hitFace) {
+        if (action == Action.RIGHT_CLICK_BLOCK || action == Action.RIGHT_CLICK_AIR) {
             try {
                 AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
                 World wWorld = wPlayer.getWorld();
+                BlockVector3 wPosition = BukkitAdapter.asBlockVector(target.getRelative(hitFace).getLocation());
 
-                LocalSession session = WorldEdit.getInstance()
-                        .getSessionManager()
-                        .get(wPlayer);
+                Clipboard clipboard;
 
-                if (!session.isSelectionDefined(wWorld)) {
-                    player.sendMessage("NO SELECTION");
-                    return ActionResult.error();
+                BaseItemStack itemStack = BukkitAdapter.adapt(itemMain);
+
+                String uuid = null;
+                if (itemStack.hasNbtData()) {
+                    CompoundTag tag = itemStack.getNbtData();
+                    Tag esTag = tag.getValue().get("es");
+                    if (esTag instanceof CompoundTag) {
+                        uuid = ((CompoundTag) esTag).getString("id");
+                    }
                 }
 
-                Region region = session.getSelection(wWorld);
-
-                BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-
-                String uuid = UUID.randomUUID().toString();
-
-                CompoundTag tag = CompoundTagBuilder.create()
-                        .put("es", CompoundTagBuilder.create()
-                                .put("id", new StringTag(uuid))
-                                .build()
-                        )
-                        .put("display", CompoundTagBuilder.create()
-                                .put("Lore", ListTagBuilder.create(StringTag.class)
-                                        .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"gray\",\"italic\":false}", uuid)))
-                                        .build()
-                                )
-                                .build()
-                        )
-                        .build();
-                BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
-
-                wPlayer.giveItem(itemStack);
-
-                try (EditSession editSession = WorldEdit.getInstance()
-                        .getEditSessionFactory()
-                        .getEditSession(wWorld, -1)) {
-                    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-                            editSession, region, clipboard, region.getMinimumPoint()
-                    );
-                    // configure here
-                    Operations.complete(forwardExtentCopy);
-                }
+                if (uuid == null)
+                    return ActionResult.success();
 
                 File file = new File(plugin.schematicDirectory, uuid + ".schem");
 
-                try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
-                    writer.write(clipboard);
+                if (!file.exists()) {
+                    player.sendMessage("この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)");
+                    return ActionResult.error();
                 }
 
-                player.sendMessage("CREATED");
+                ClipboardFormat format = ClipboardFormats.findByFile(file);
+                try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+                    clipboard = reader.read();
+                }
+
+                try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(wWorld, -1)) {
+                    Operation operation = new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(wPosition)
+                            // configure here
+                            .build();
+                    Operations.complete(operation);
+                }
+
+                player.sendActionBar("§" + Integer.toHexString(random.nextInt(16)) + "設計図を設置しました。");
             } catch (WorldEditException e) {
-                ActionResult.error("WorldEdit Error: ", e.getMessage());
+                Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
+                player.sendMessage("WorldEditエラー: " + e.getMessage());
+                return ActionResult.error("WorldEditエラー: ", e.getMessage());
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.log.log(Level.WARNING, "IO Error: ", e);
+                player.sendMessage("ロードに失敗しました: " + e.getMessage());
+                return ActionResult.error("WorldEditエラー: ", e.getMessage());
             }
 
-            return ActionResult.success();
-        }
-
-        if (action == Action.RIGHT_CLICK_BLOCK) {
-            player.sendMessage("PLACE: " + target);
             return ActionResult.success();
         }
 
