@@ -1,5 +1,26 @@
 package net.teamfruit.easystructure;
 
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.CompoundTagBuilder;
+import com.sk89q.jnbt.ListTagBuilder;
+import com.sk89q.jnbt.StringTag;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.blocks.BaseItemStack;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.bukkit.BukkitPlayer;
+import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.item.ItemType;
+import com.sk89q.worldedit.world.item.ItemTypes;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
@@ -16,6 +37,11 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.UUID;
 
 public class EventListener implements Listener {
     private final EasyStructure plugin;
@@ -96,8 +122,65 @@ public class EventListener implements Listener {
 
     private ActionResult onPlayerUse(final Player player, ItemStack itemMain, final Action action, final Block target, final BlockFace face) {
         if (player.isSneaking() && (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK)) {
-            player.sendMessage("CREATE");
-            //itemMain.getItemMeta().
+            try {
+                AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
+                World wWorld = wPlayer.getWorld();
+
+                LocalSession session = WorldEdit.getInstance()
+                        .getSessionManager()
+                        .get(wPlayer);
+
+                if (!session.isSelectionDefined(wWorld)) {
+                    player.sendMessage("NO SELECTION");
+                    return ActionResult.error();
+                }
+
+                Region region = session.getSelection(wWorld);
+
+                BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+
+                String uuid = UUID.randomUUID().toString();
+
+                CompoundTag tag = CompoundTagBuilder.create()
+                        .put("es", CompoundTagBuilder.create()
+                                .put("id", new StringTag(uuid))
+                                .build()
+                        )
+                        .put("display", CompoundTagBuilder.create()
+                                .put("Lore", ListTagBuilder.create(StringTag.class)
+                                        .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"gray\",\"italic\":false}", uuid)))
+                                        .build()
+                                )
+                                .build()
+                        )
+                        .build();
+                BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
+
+                wPlayer.giveItem(itemStack);
+
+                try (EditSession editSession = WorldEdit.getInstance()
+                        .getEditSessionFactory()
+                        .getEditSession(wWorld, -1)) {
+                    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
+                            editSession, region, clipboard, region.getMinimumPoint()
+                    );
+                    // configure here
+                    Operations.complete(forwardExtentCopy);
+                }
+
+                File file = new File(plugin.schematicDirectory, uuid + ".schem");
+
+                try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
+                    writer.write(clipboard);
+                }
+
+                player.sendMessage("CREATED");
+            } catch (WorldEditException e) {
+                ActionResult.error("WorldEdit Error: ", e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return ActionResult.success();
         }
 
