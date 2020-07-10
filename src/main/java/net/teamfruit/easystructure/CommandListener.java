@@ -53,6 +53,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
             AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
             World wWorld = wPlayer.getWorld();
 
+            // プレイヤーセッション
             LocalSession session = WorldEdit.getInstance()
                     .getSessionManager()
                     .get(wPlayer);
@@ -70,6 +71,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
             String title = args.length > 0 ? args[0] : "設計図" + StringUtils.substringBefore(uuid, "-");
 
+            // NBTにUUIDをセット (見た目もセット)
             CompoundTag tag = CompoundTagBuilder.create()
                     .put("es", CompoundTagBuilder.create()
                             .put("id", new StringTag(uuid))
@@ -84,10 +86,8 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                             .build()
                     )
                     .build();
-            BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
 
-            wPlayer.giveItem(itemStack);
-
+            // スケマティックをクリップボードに保存
             try (EditSession editSession = WorldEdit.getInstance()
                     .getEditSessionFactory()
                     .getEditSession(wWorld, -1)) {
@@ -98,13 +98,20 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 Operations.complete(forwardExtentCopy);
             }
 
+            // 保存先
             File file = new File(plugin.schematicDirectory, uuid + ".schem");
 
+            // クリップボードをファイルに保存
             try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(file))) {
                 writer.write(clipboard);
             }
 
+            // アイテムを渡す
+            BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
+            wPlayer.giveItem(itemStack);
+
             player.sendMessage("設計図" + (title != null ? "[" + title + "]" : "") + "を作成しました。");
+
         } catch (WorldEditException e) {
             Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
             player.sendMessage("WorldEditエラー: " + e.getMessage());

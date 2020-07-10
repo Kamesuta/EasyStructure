@@ -12,9 +12,11 @@ public final class EasyStructure extends JavaPlugin {
         // Plugin startup logic
         new Config(this).configure();
 
+        // スケマティックフォルダ初期化
         schematicDirectory = new File(getDataFolder(), "schematics");
         schematicDirectory.mkdirs();
 
+        // イベント登録
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
         getCommand("es").setExecutor(new CommandListener(this));
     }
