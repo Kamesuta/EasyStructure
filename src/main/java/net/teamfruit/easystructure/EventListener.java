@@ -174,10 +174,11 @@ public class EventListener implements Listener {
                         .get(wPlayer);
 
                 // クリップボードからスケマティックを設置
-                try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(wWorld, -1)) {
+                try (EditSession editSession = session.createEditSession(wPlayer)) {
                     Operation operation = new ClipboardHolder(clipboard)
                             .createPaste(editSession)
                             .to(wPosition)
+                            .ignoreAirBlocks(true)
                             // configure here
                             .build();
                     Operations.complete(operation);
