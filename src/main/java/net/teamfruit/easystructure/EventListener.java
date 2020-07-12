@@ -9,19 +9,13 @@ import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
-import com.sk89q.worldedit.extent.ChangeSetExtent;
-import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.function.operation.ChangeSetExecutor;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.history.UndoContext;
-import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.HandSide;
 import com.sk89q.worldedit.world.item.ItemTypes;
-import net.teamfruit.easystructure.fakepaste.FakeExtent;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Particle;
@@ -38,7 +32,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -56,7 +50,7 @@ public class EventListener implements Listener {
                     onEffect(player);
                 }
             }
-        }.runTaskTimer(this.plugin, 3, 3);
+        }.runTaskTimer(this.plugin, 0, 1);
     }
 
     // アイテムからUUIDを取得
@@ -90,61 +84,37 @@ public class EventListener implements Listener {
     }
 
     private void onEffect(Player player) {
-        try {
-            AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
-            ESSession essession = plugin.sessionManager.get(wPlayer);
+        AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
+        ESSession essession = plugin.sessionManager.get(wPlayer);
 
-            // ブレイズロッドならアイテムからUUID取得
-            final String uuid = getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
-            if (uuid == null)
-                return;
+        // ブレイズロッドならアイテムからUUID取得
+        final String uuid = getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
 
-            // スケマティックをクリップボードに読み込み
-            final Clipboard clipboard = essession.getClipboardFromId(uuid);
-            if (clipboard == null) {
-                player.sendMessage("この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)");
-                return;
-            }
+        // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
+        BlockVector3 wPosition = getPlaceLocation(player);
 
-            // Fakeロールバック
-            if (essession.lastChangeSet != null) {
-                Extent fakeExtent = new FakeExtent(wPlayer.getWorld(), wPlayer);
-                UndoContext context = new UndoContext();
-                context.setExtent(fakeExtent);
-                Operations.completeBlindly(ChangeSetExecutor.createUndo(essession.lastChangeSet, context));
-            }
+        boolean visible = Math.sin(System.currentTimeMillis() / 240.0) > -0.5;
 
-            // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
-            BlockVector3 wPosition = getPlaceLocation(player);
-            if (wPosition == null)
-                return;
+        // 同じ状態なら更新しない
+        if (Objects.equals(uuid, essession.lastUuid)
+                && Objects.equals(wPosition, essession.lastPosition)
+                && Objects.equals(visible, essession.lastVisible))
+            return;
+        essession.lastUuid = uuid;
+        essession.lastPosition = wPosition;
+        essession.lastVisible = visible;
 
-            // プレイヤーセッション
-            LocalSession session = WorldEdit.getInstance()
-                    .getSessionManager()
-                    .get(wPlayer);
+        // スケマティックをクリップボードに読み込み
+        final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
 
-            // フェイクブロック送信
-            essession.lastChangeSet = new BlockOptimizedHistory();
-            Extent fakeExtent = new FakeExtent(wPlayer.getWorld(), wPlayer);
-            Extent fakeChangeExtent = new ChangeSetExtent(fakeExtent, essession.lastChangeSet);
-            Operation operation = new ClipboardHolder(clipboard)
-                    .createPaste(fakeChangeExtent)
-                    .to(wPosition)
-                    .ignoreAirBlocks(true)
-                    // configure here
-                    .build();
-            Operations.complete(operation);
+        // フェイクブロック更新
+        essession.updateFakeSchematic(wPlayer, wPosition, clipboard, visible);
 
-            // パーティクル表示
-            final int colorInt = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);
-            final Color color = Color.fromRGB(colorInt);
-            final int range = plugin.getConfig().getInt(Config.SETTING_PARTICLE_RANGE);
-            player.spawnParticle(Particle.REDSTONE, wPosition.getX() + .5, wPosition.getY() + .5, wPosition.getZ() + .5, 1, 0, 0, 0, new Particle.DustOptions(color, 1));
-        } catch (WorldEditException e) {
-            Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
-            player.sendMessage("WorldEditエラー: " + e.getMessage());
-        }
+        // パーティクル表示
+        final int colorInt = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);
+        final Color color = Color.fromRGB(colorInt);
+        final int range = plugin.getConfig().getInt(Config.SETTING_PARTICLE_RANGE);
+        player.spawnParticle(Particle.REDSTONE, wPosition.getX() + .5, wPosition.getY() + .5, wPosition.getZ() + .5, 1, 0, 0, 0, new Particle.DustOptions(color, 1));
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -179,7 +149,7 @@ public class EventListener implements Listener {
                 return;
 
             // スケマティックをクリップボードに読み込み
-            final Clipboard clipboard = essession.getClipboardFromId(uuid);
+            final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
             if (clipboard == null) {
                 player.sendMessage("この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)");
                 return;
