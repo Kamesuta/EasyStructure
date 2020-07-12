@@ -16,9 +16,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.HandSide;
 import com.sk89q.worldedit.world.item.ItemTypes;
-import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
-import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -93,7 +91,18 @@ public class EventListener implements Listener {
         // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
         BlockVector3 wPosition = getPlaceLocation(player);
 
-        boolean visible = Math.sin(System.currentTimeMillis() / 240.0) > -0.5;
+        // 時計のための時刻
+        long time = System.currentTimeMillis();
+
+        // 状態が変わったら時計をリセット
+        if (!Objects.equals(uuid, essession.lastUuid)
+                || !Objects.equals(wPosition, essession.lastPosition))
+            essession.lastMoveTime = time;
+
+        // 時計
+        long clock = time - essession.lastMoveTime;
+        double span = 2750;
+        boolean visible = ((clock % span) / span) < 0.8;
 
         // 同じ状態なら更新しない
         if (Objects.equals(uuid, essession.lastUuid)
@@ -109,12 +118,6 @@ public class EventListener implements Listener {
 
         // フェイクブロック更新
         essession.updateFakeSchematic(wPlayer, wPosition, clipboard, visible);
-
-        // パーティクル表示
-        final int colorInt = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);
-        final Color color = Color.fromRGB(colorInt);
-        final int range = plugin.getConfig().getInt(Config.SETTING_PARTICLE_RANGE);
-        player.spawnParticle(Particle.REDSTONE, wPosition.getX() + .5, wPosition.getY() + .5, wPosition.getZ() + .5, 1, 0, 0, 0, new Particle.DustOptions(color, 1));
     }
 
     @EventHandler(priority = EventPriority.HIGH)

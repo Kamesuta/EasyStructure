@@ -15,6 +15,9 @@ import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
 import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.block.BlockTypes;
+import com.sk89q.worldedit.world.block.FuzzyBlockState;
+import net.teamfruit.easystructure.fakepaste.DummyExtent;
 import net.teamfruit.easystructure.fakepaste.FakeExtent;
 import net.teamfruit.easystructure.fakepaste.RealExtent;
 
@@ -30,6 +33,7 @@ public class ESSession {
     public String lastUuid;
     public BlockVector3 lastPosition;
     public boolean lastVisible;
+    public long lastMoveTime;
 
     @Nullable
     public Clipboard getClipboardCachedFromId(@Nullable String uuid) {
@@ -75,7 +79,10 @@ public class ESSession {
         if (clipboard != null && wPosition != null && isVisible) {
             // フェイクブロック送信
             lastChangeSet = new BlockOptimizedHistory();
-            Extent fakeExtent = new FakeExtent(wPlayer.getWorld(), wPlayer);
+            Extent fakeExtent = isVisible
+                    ? new FakeExtent(wPlayer.getWorld(), wPlayer)
+                    : new DummyExtent(wPlayer.getWorld(), wPlayer,
+                    FuzzyBlockState.builder().type(BlockTypes.GLASS).build());
             Extent fakeChangeExtent = new ChangeSetExtent(fakeExtent, lastChangeSet);
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(fakeChangeExtent)
