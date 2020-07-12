@@ -9,6 +9,7 @@ import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
+import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
@@ -18,6 +19,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
+import net.teamfruit.easystructure.fakepaste.FakeExtent;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
@@ -90,6 +92,58 @@ public class EventListener implements Listener {
 
         if (hitBlock == null)
             return;
+
+        try {
+            AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
+            World wWorld = wPlayer.getWorld();
+            BlockVector3 wPosition = BukkitAdapter.asBlockVector(hitBlock.getRelative(hitFace).getLocation());
+
+            ESSession essession = plugin.sessionManager.get(wPlayer);
+            final Clipboard clipboard;
+            if (uuid.equals(essession.currentClipboard))
+                clipboard = essession.currentClipboard;
+            else {
+                // 保存先
+                File file = new File(plugin.schematicDirectory, uuid + ".schem");
+
+                if (!file.exists()) {
+                    player.sendMessage("この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)");
+                    return;
+                }
+
+                // スケマティックをクリップボードに読み込み
+                ClipboardFormat format = ClipboardFormats.findByFile(file);
+                try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
+                    clipboard = reader.read();
+                }
+
+                // スケマティックをセッションに保存
+                essession.currentSchematic = uuid;
+                essession.currentClipboard = clipboard;
+            }
+
+            // プレイヤーセッション
+            LocalSession session = WorldEdit.getInstance()
+                    .getSessionManager()
+                    .get(wPlayer);
+
+            // フェイクブロック送信
+            Extent fakeExtent = new FakeExtent(wPlayer);
+            Operation operation = new ClipboardHolder(clipboard)
+                    .createPaste(fakeExtent)
+                    .to(wPosition)
+                    .ignoreAirBlocks(true)
+                    // configure here
+                    .build();
+            Operations.complete(operation);
+
+        } catch (WorldEditException e) {
+            Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
+            player.sendMessage("WorldEditエラー: " + e.getMessage());
+        } catch (IOException e) {
+            Log.log.log(Level.WARNING, "IO Error: ", e);
+            player.sendMessage("ロードに失敗しました: " + e.getMessage());
+        }
 
         // パーティクル表示
         final int colorInt = plugin.getConfig().getInt(Config.SETTING_PARTICLE_COLOR, 0xffffff);

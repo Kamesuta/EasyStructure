@@ -6,6 +6,7 @@ import java.io.File;
 
 public final class EasyStructure extends JavaPlugin {
     public File schematicDirectory;
+    public ESSessionManager sessionManager;
 
     @Override
     public void onEnable() {
@@ -15,6 +16,9 @@ public final class EasyStructure extends JavaPlugin {
         // スケマティックフォルダ初期化
         schematicDirectory = new File(getDataFolder(), "schematics");
         schematicDirectory.mkdirs();
+
+        // セッションマネージャー
+        sessionManager = new ESSessionManager();
 
         // イベント登録
         getServer().getPluginManager().registerEvents(new EventListener(this), this);
