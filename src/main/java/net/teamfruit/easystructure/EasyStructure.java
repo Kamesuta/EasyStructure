@@ -5,13 +5,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 
 public final class EasyStructure extends JavaPlugin {
+    public static EasyStructure INSTANCE;
+
     public File schematicDirectory;
     public ESSessionManager sessionManager;
 
     @Override
     public void onEnable() {
+        INSTANCE = this;
+
         // Plugin startup logic
-        new Config(this).configure();
+        new Config().configure();
 
         // スケマティックフォルダ初期化
         schematicDirectory = new File(getDataFolder(), "schematics");
