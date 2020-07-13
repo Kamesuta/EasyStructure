@@ -1,5 +1,9 @@
 package net.teamfruit.easystructure;
 
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.extent.ChangeSetExtent;
 import com.sk89q.worldedit.extent.Extent;
@@ -14,6 +18,7 @@ import com.sk89q.worldedit.history.UndoContext;
 import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
 import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldedit.world.block.FuzzyBlockState;
@@ -34,6 +39,9 @@ public class ESSession {
     public BlockVector3 lastPosition;
     public boolean lastVisible;
     public long lastMoveTime;
+    public int lastYawInt;
+    public int yawOffsetInt;
+    public int lastYawOffsetInt;
 
     public boolean isValidId(String uuid) {
         if (uuid.equals(currentClipboard))
@@ -79,7 +87,8 @@ public class ESSession {
         return clipboard;
     }
 
-    public void updateFakeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, boolean isVisible) {
+    // 設計図を仮設置
+    public void updateFakeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, int yawInt, boolean isVisible) {
         // Fakeロールバック
         if (lastChangeSet != null) {
             Extent realExtent = new RealExtent(wPlayer.getWorld(), wPlayer);
@@ -97,13 +106,40 @@ public class ESSession {
                     : new DummyExtent(wPlayer.getWorld(), wPlayer,
                     FuzzyBlockState.builder().type(BlockTypes.GLASS).build());
             Extent fakeChangeExtent = new ChangeSetExtent(fakeExtent, lastChangeSet);
-            Operation operation = new ClipboardHolder(clipboard)
+            ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
+            clipboardHolder.setTransform(new AffineTransform().rotateY(yawInt * -90.0));
+            Operation operation = clipboardHolder
                     .createPaste(fakeChangeExtent)
                     .to(wPosition)
                     .ignoreAirBlocks(true)
                     // configure here
                     .build();
             Operations.completeBlindly(operation);
+        }
+    }
+
+    // 設計図を設置
+    public void placeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, int yawInt) throws WorldEditException {
+        if (clipboard != null && wPosition != null) {
+            // プレイヤーセッション
+            LocalSession session = WorldEdit.getInstance()
+                    .getSessionManager()
+                    .get(wPlayer);
+
+            // クリップボードからスケマティックを設置
+            try (EditSession editSession = session.createEditSession(wPlayer)) {
+                ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
+                clipboardHolder.setTransform(new AffineTransform().rotateY(yawInt * -90.0));
+                Operation operation = clipboardHolder
+                        .createPaste(editSession)
+                        .to(wPosition)
+                        .ignoreAirBlocks(true)
+                        // configure here
+                        .build();
+                Operations.complete(operation);
+                // Undo履歴に記録
+                session.remember(editSession);
+            }
         }
     }
 }

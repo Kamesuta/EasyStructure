@@ -22,21 +22,21 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class CommandListener implements CommandExecutor, TabCompleter {
     @Override
@@ -274,6 +274,11 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
                 uuid = UUID.randomUUID().toString();
 
+                // 向き
+                float yaw = wPlayer.getLocation().getYaw();
+                int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
+                essession.yawOffsetInt = yawInt;
+
                 // スケマティックをクリップボードに保存
                 try (EditSession editSession = WorldEdit.getInstance()
                         .getEditSessionFactory()
@@ -317,19 +322,9 @@ public class CommandListener implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         final List<String> completions = new ArrayList<>();
-        if (args.length == 1) {
+        if (args.length == 1 || args.length == 2) {
             completions.add(sender.getName() + "の建築" + new SimpleDateFormat("M月d日(E)H時m分").format(new Date()));
             completions.add("設計図" + new SimpleDateFormat("M月d日(E)H時m分").format(new Date()));
-        } else if (args.length == 2) {
-            String[] schems = EasyStructure.INSTANCE.schematicDirectory.list();
-            if (schems != null) {
-                List<String> files = Arrays.stream(schems)
-                        .filter(e -> e.endsWith(".schem"))
-                        .map(e -> StringUtils.substringBeforeLast(e, ".schem"))
-                        .collect(Collectors.toList());
-                StringUtil.copyPartialMatches(args[1], files, completions);
-                Collections.sort(completions);
-            }
         }
         return completions;
     }

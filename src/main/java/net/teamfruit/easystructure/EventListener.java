@@ -1,16 +1,10 @@
 package net.teamfruit.easystructure;
 
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.function.operation.Operation;
-import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.HandSide;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -50,12 +45,21 @@ public class EventListener implements Listener {
         // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
         BlockVector3 wPosition = ESUtils.getPlaceLocation(player);
 
+        // 向き
+        float yaw = wPlayer.getLocation().getYaw();
+        int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
+
         // 時計のための時刻
         long time = System.currentTimeMillis();
 
+        // 状態が変わった
+        boolean stateSame = yawInt == essession.lastYawInt
+                && essession.yawOffsetInt == essession.lastYawOffsetInt
+                && Objects.equals(uuid, essession.lastUuid)
+                && Objects.equals(wPosition, essession.lastPosition);
+
         // 状態が変わったら時計をリセット
-        if (!Objects.equals(uuid, essession.lastUuid)
-                || !Objects.equals(wPosition, essession.lastPosition))
+        if (!stateSame)
             essession.lastMoveTime = time;
 
         // 時計
@@ -64,19 +68,39 @@ public class EventListener implements Listener {
         boolean visible = ((clock % span) / span) < 0.8;
 
         // 同じ状態なら更新しない
-        if (Objects.equals(uuid, essession.lastUuid)
-                && Objects.equals(wPosition, essession.lastPosition)
-                && Objects.equals(visible, essession.lastVisible))
+        if (stateSame && Objects.equals(visible, essession.lastVisible))
             return;
         essession.lastUuid = uuid;
         essession.lastPosition = wPosition;
         essession.lastVisible = visible;
+        essession.lastYawInt = yawInt;
+        essession.lastYawOffsetInt = essession.yawOffsetInt;
 
         // スケマティックをクリップボードに読み込み
         final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
 
         // フェイクブロック更新
-        essession.updateFakeSchematic(wPlayer, wPosition, clipboard, visible);
+        essession.updateFakeSchematic(wPlayer, wPosition, clipboard, yawInt - essession.yawOffsetInt, visible);
+    }
+
+    @EventHandler
+    public void onItemSwap(final PlayerSwapHandItemsEvent event) {
+        final Player player = event.getPlayer();
+        AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
+        ESSession essession = EasyStructure.INSTANCE.sessionManager.get(wPlayer);
+
+        // 権限チェック
+        if (!wPlayer.hasPermission("es.use"))
+            return;
+
+        // ブレイズロッドならアイテムからUUID取得
+        final String uuid = ESUtils.getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
+        if (uuid == null)
+            return;
+
+        // 回転
+        event.setCancelled(true);
+        essession.yawOffsetInt = (essession.yawOffsetInt + 1) % 4;
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -110,6 +134,10 @@ public class EventListener implements Listener {
             if (wPosition == null)
                 return;
 
+            // 向き
+            float yaw = wPlayer.getLocation().getYaw();
+            int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
+
             // スケマティックをクリップボードに読み込み
             final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
             if (clipboard == null) {
@@ -117,23 +145,8 @@ public class EventListener implements Listener {
                 return;
             }
 
-            // プレイヤーセッション
-            LocalSession session = WorldEdit.getInstance()
-                    .getSessionManager()
-                    .get(wPlayer);
-
-            // クリップボードからスケマティックを設置
-            try (EditSession editSession = session.createEditSession(wPlayer)) {
-                Operation operation = new ClipboardHolder(clipboard)
-                        .createPaste(editSession)
-                        .to(wPosition)
-                        .ignoreAirBlocks(true)
-                        // configure here
-                        .build();
-                Operations.complete(operation);
-                // Undo履歴に記録
-                session.remember(editSession);
-            }
+            // フェイクブロック更新
+            essession.placeSchematic(wPlayer, wPosition, clipboard, yawInt - essession.yawOffsetInt);
 
             // アイテム名取得
             String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
