@@ -19,6 +19,7 @@ import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
 import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
+import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import com.sk89q.worldedit.world.block.FuzzyBlockState;
@@ -87,6 +88,26 @@ public class ESSession {
         return clipboard;
     }
 
+    private Operation createPlaceOperation(BlockVector3 wPosition, Clipboard clipboard, Extent destination, int yawInt) {
+        ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
+        Transform transform = new AffineTransform().rotateY(yawInt * -90.0);
+        clipboardHolder.setTransform(transform);
+
+        BlockVector3 posSize0 = clipboard.getDimensions();
+        BlockVector3 posSize1 = BlockVector3.at(posSize0.getBlockX() / 2, 0, posSize0.getBlockZ());
+        BlockVector3 posSize2 = transform.apply(posSize1.toVector3()).toBlockPoint();
+        BlockVector3 posSize3 = BlockVector3.at(-posSize2.getBlockX(), 0, -posSize2.getBlockZ());
+        BlockVector3 pos = wPosition.add(posSize3);
+
+        Operation operation = clipboardHolder
+                .createPaste(destination)
+                .to(pos)
+                .ignoreAirBlocks(true)
+                // configure here
+                .build();
+        return operation;
+    }
+
     // 設計図を仮設置
     public void updateFakeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, int yawInt, boolean isVisible) {
         // Fakeロールバック
@@ -106,15 +127,7 @@ public class ESSession {
                     : new DummyExtent(wPlayer.getWorld(), wPlayer,
                     FuzzyBlockState.builder().type(BlockTypes.GLASS).build());
             Extent fakeChangeExtent = new ChangeSetExtent(fakeExtent, lastChangeSet);
-            ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
-            clipboardHolder.setTransform(new AffineTransform().rotateY(yawInt * -90.0));
-            Operation operation = clipboardHolder
-                    .createPaste(fakeChangeExtent)
-                    .to(wPosition)
-                    .ignoreAirBlocks(true)
-                    // configure here
-                    .build();
-            Operations.completeBlindly(operation);
+            Operations.completeBlindly(createPlaceOperation(wPosition, clipboard, fakeChangeExtent, yawInt));
         }
     }
 
@@ -128,15 +141,7 @@ public class ESSession {
 
             // クリップボードからスケマティックを設置
             try (EditSession editSession = session.createEditSession(wPlayer)) {
-                ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
-                clipboardHolder.setTransform(new AffineTransform().rotateY(yawInt * -90.0));
-                Operation operation = clipboardHolder
-                        .createPaste(editSession)
-                        .to(wPosition)
-                        .ignoreAirBlocks(true)
-                        // configure here
-                        .build();
-                Operations.complete(operation);
+                Operations.complete(createPlaceOperation(wPosition, clipboard, editSession, yawInt));
                 // Undo履歴に記録
                 session.remember(editSession);
             }
