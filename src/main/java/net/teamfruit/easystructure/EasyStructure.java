@@ -25,8 +25,8 @@ public final class EasyStructure extends JavaPlugin {
         sessionManager = new ESSessionManager();
 
         // イベント登録
-        getServer().getPluginManager().registerEvents(new EventListener(this), this);
-        getCommand("es").setExecutor(new CommandListener(this));
+        getServer().getPluginManager().registerEvents(new EventListener(), this);
+        getCommand("es").setExecutor(new CommandListener());
     }
 
     @Override

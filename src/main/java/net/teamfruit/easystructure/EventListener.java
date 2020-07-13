@@ -1,12 +1,9 @@
 package net.teamfruit.easystructure;
 
-import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
-import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -15,10 +12,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.util.HandSide;
-import com.sk89q.worldedit.world.item.ItemTypes;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -27,69 +21,34 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.RayTraceResult;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
 public class EventListener implements Listener {
-    private final EasyStructure plugin;
     private final Random random = new Random();
 
-    public EventListener(EasyStructure plugin) {
-        this.plugin = plugin;
-
+    public EventListener() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (final Player player : plugin.getServer().getOnlinePlayers()) {
+                for (final Player player : EasyStructure.INSTANCE.getServer().getOnlinePlayers()) {
                     onEffect(player);
                 }
             }
-        }.runTaskTimer(this.plugin, 0, 1);
-    }
-
-    // アイテムからUUIDを取得
-    @Nullable
-    private String getWandId(BaseItemStack itemStack) {
-        if (itemStack.getType() == ItemTypes.BLAZE_ROD && itemStack.hasNbtData()) {
-            CompoundTag tag = itemStack.getNbtData();
-            Tag esTag = tag.getValue().get("es");
-            if (esTag instanceof CompoundTag) {
-                return ((CompoundTag) esTag).getString("id");
-            }
-        }
-        return null;
-    }
-
-    // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
-    @Nullable
-    private BlockVector3 getPlaceLocation(Player player) {
-        RayTraceResult rayResult = player.rayTraceBlocks(plugin.getConfig().getInt(Config.SETTING_PLACE_RANGE), FluidCollisionMode.NEVER);
-
-        if (rayResult == null)
-            return null;
-
-        Block hitBlock = rayResult.getHitBlock();
-        BlockFace hitFace = rayResult.getHitBlockFace();
-
-        if (hitBlock == null)
-            return null;
-
-        return BukkitAdapter.asBlockVector(hitBlock.getRelative(hitFace).getLocation());
+        }.runTaskTimer(EasyStructure.INSTANCE, 0, 1);
     }
 
     private void onEffect(Player player) {
         AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
-        ESSession essession = plugin.sessionManager.get(wPlayer);
+        ESSession essession = EasyStructure.INSTANCE.sessionManager.get(wPlayer);
 
         // ブレイズロッドならアイテムからUUID取得
-        final String uuid = getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
+        final String uuid = ESUtils.getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
 
         // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
-        BlockVector3 wPosition = getPlaceLocation(player);
+        BlockVector3 wPosition = ESUtils.getPlaceLocation(player);
 
         // 時計のための時刻
         long time = System.currentTimeMillis();
@@ -135,19 +94,19 @@ public class EventListener implements Listener {
 
         try {
             AbstractPlayerActor wPlayer = BukkitAdapter.adapt(player);
-            ESSession essession = plugin.sessionManager.get(wPlayer);
+            ESSession essession = EasyStructure.INSTANCE.sessionManager.get(wPlayer);
 
             // 権限チェック
             if (!wPlayer.hasPermission("es.use"))
                 return;
 
             // ブレイズロッドならアイテムからUUID取得
-            final String uuid = getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
+            final String uuid = ESUtils.getWandId(wPlayer.getItemInHand(HandSide.MAIN_HAND));
             if (uuid == null)
                 return;
 
             // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
-            BlockVector3 wPosition = getPlaceLocation(player);
+            BlockVector3 wPosition = ESUtils.getPlaceLocation(player);
             if (wPosition == null)
                 return;
 
@@ -177,10 +136,10 @@ public class EventListener implements Listener {
             }
 
             // アイテム名取得
-            String title = player.getInventory().getItemInMainHand().getItemMeta().getDisplayName();
+            String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
 
             // 設定でONのときログ出力
-            if (plugin.getConfig().getBoolean(Config.SETTING_PLACE_LOG))
+            if (EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_LOG))
                 Log.log.log(Level.INFO, String.format("%s placed schematic ( %s : %s ).", player.getName(), title, uuid));
 
             // アクションバー

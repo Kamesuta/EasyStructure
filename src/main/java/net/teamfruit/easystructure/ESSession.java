@@ -35,6 +35,19 @@ public class ESSession {
     public boolean lastVisible;
     public long lastMoveTime;
 
+    public boolean isValidId(String uuid) {
+        if (uuid.equals(currentClipboard))
+            return true;
+
+        // 保存先
+        File file = new File(EasyStructure.INSTANCE.schematicDirectory, uuid + ".schem");
+
+        if (!file.exists())
+            return false;
+
+        return true;
+    }
+
     @Nullable
     public Clipboard getClipboardCachedFromId(@Nullable String uuid) {
         if (uuid == null)
