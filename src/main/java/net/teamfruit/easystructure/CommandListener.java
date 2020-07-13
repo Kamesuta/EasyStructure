@@ -1,9 +1,6 @@
 package net.teamfruit.easystructure;
 
 import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.CompoundTagBuilder;
-import com.sk89q.jnbt.ListTagBuilder;
-import com.sk89q.jnbt.StringTag;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -64,20 +61,33 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 player.sendMessage("");
                 player.sendMessage("");
 
-                player.sendMessage(new ComponentBuilder("======= EasyStructureメニュー =======")
-                        .color(ChatColor.GREEN)
-                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
-                                .append(new TextComponent(
-                                        new ComponentBuilder("猿でもわかるコピペプラグインへようこそ！。 ")
-                                                .color(ChatColor.BLUE)
-                                                .bold(true)
+                player.sendMessage(new ComponentBuilder()
+                        .append("======")
+                        .color(ChatColor.GRAY)
+                        .append("[")
+                        .color(ChatColor.RESET)
+                        .append(new TextComponent(
+                                new ComponentBuilder("EasyStructureメニュー")
+                                        .color(ChatColor.BLUE)
+                                        .bold(true)
+                                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
+                                                .append(new TextComponent(
+                                                        new ComponentBuilder("猿でもわかるコピペプラグインへようこそ！。 ")
+                                                                .color(ChatColor.BLUE)
+                                                                .bold(true)
+                                                                .create()
+                                                ))
+                                                .append("このプラグインは設計図(ブレイズロッド)を振るだけで建物がホイホイとできるよ。 ")
+                                                .append("下のボタンから、設計図の作成や、設計図の共有ができるよ。 ")
+                                                .append("また、Discord等に貼ってあるコマンドをコピーすると設計図を入手できるよ。 ")
                                                 .create()
-                                ))
-                                .append("このプラグインは設計図(ブレイズロッド)を振るだけで建物がホイホイとできるよ。 ")
-                                .append("下のボタンから、設計図の作成や、設計図の共有ができるよ。 ")
-                                .append("また、Discord等に貼ってあるコマンドをコピーすると設計図を入手できるよ。 ")
-                                .create()
+                                        ))
+                                        .create()
                         ))
+                        .append("]")
+                        .color(ChatColor.RESET)
+                        .append("======")
+                        .color(ChatColor.GRAY)
                         .create());
 
                 player.sendMessage("");
@@ -110,10 +120,11 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 }
 
                 // アイテム名取得
-                ComponentBuilder componentA = new ComponentBuilder("設計図をDiscord等で共有");
+                ComponentBuilder componentA = new ComponentBuilder();
                 if (uuid != null) {
                     String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
                     componentA
+                            .append("設計図をDiscord等で共有")
                             .color(ChatColor.GREEN)
                             .underlined(true)
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
@@ -131,8 +142,12 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                             .event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "/es " + uuid + " " + title));
                 } else {
                     componentA
-                            .color(ChatColor.DARK_GRAY)
-                            .strikethrough(true)
+                            .append(new TextComponent(
+                                    new ComponentBuilder("✕")
+                                            .color(ChatColor.RED)
+                                            .bold(true)
+                                            .create()
+                            ))
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
                                     .append(new TextComponent(
                                             new ComponentBuilder("設計図を手に持ってください。 ")
@@ -142,7 +157,10 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                                     ))
                                     .append("手持ちの設計図を召喚できるコマンドをクリップボードにコピーします。 ")
                                     .create()
-                            ));
+                            ))
+                            .append("設計図をDiscord等で共有")
+                            .color(ChatColor.GRAY)
+                            .underlined(true);
                 }
                 component2.append(new ComponentBuilder()
                         .append(new TextComponent(" ["))
@@ -154,27 +172,38 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
                 player.sendMessage("");
 
-                player.sendMessage(new ComponentBuilder("==================================")
-                        .color(ChatColor.GREEN)
-                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
-                                .append(new TextComponent(
-                                        new ComponentBuilder("WorldEditの選択方法がわからない人へ。 ")
-                                                .color(ChatColor.BLUE)
-                                                .bold(true)
+                player.sendMessage(new ComponentBuilder()
+                        .append("================================")
+                        .color(ChatColor.GRAY)
+                        .append("[")
+                        .color(ChatColor.RESET)
+                        .append(new TextComponent(
+                                new ComponentBuilder("?")
+                                        .color(ChatColor.GREEN)
+                                        .bold(true)
+                                        .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
+                                                .append(new TextComponent(
+                                                        new ComponentBuilder("WorldEditでの範囲の選択方法がわからない人へ。 ")
+                                                                .color(ChatColor.BLUE)
+                                                                .bold(true)
+                                                                .create()
+                                                ))
+                                                .append(new TextComponent(
+                                                        new ComponentBuilder("//wand")
+                                                                .color(ChatColor.GRAY)
+                                                                .bold(true)
+                                                                .create()
+                                                ))
+                                                .append("で木の斧を取り出します。 ")
+                                                .append("木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 ")
+                                                .append("この時、2つのブロックの間の直方体が選択範囲になります。 ")
+                                                .append("選択ができたら、上にあるボタンを押して設計図を作ってください。 ")
                                                 .create()
-                                ))
-                                .append(new TextComponent(
-                                        new ComponentBuilder("//wand")
-                                                .color(ChatColor.GRAY)
-                                                .bold(true)
-                                                .create()
-                                ))
-                                .append(" で木の斧を取り出します。 ")
-                                .append("木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 ")
-                                .append("この時、2つのブロックの間の直方体が選択範囲になります。 ")
-                                .append("選択ができたら、上にあるボタンを押して設計図を作ってください。 ")
-                                .create()
+                                        ))
+                                        .create()
                         ))
+                        .append("]")
+                        .color(ChatColor.RESET)
                         .create());
 
                 player.sendMessage("");
@@ -203,7 +232,39 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                         .get(wPlayer);
 
                 if (!session.isSelectionDefined(wWorld)) {
-                    player.sendMessage("範囲が選択されていません。ワールドエディットで範囲を選択してください。");
+                    player.sendMessage(new ComponentBuilder()
+                            .append("範囲が選択されていません。WorldEditで範囲を選択してください。")
+                            .append("[")
+                            .color(ChatColor.RESET)
+                            .append(new TextComponent(
+                                    new ComponentBuilder("?")
+                                            .color(ChatColor.GREEN)
+                                            .bold(true)
+                                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
+                                                    .append(new TextComponent(
+                                                            new ComponentBuilder("WorldEditでの範囲の選択方法がわからない人へ。 ")
+                                                                    .color(ChatColor.BLUE)
+                                                                    .bold(true)
+                                                                    .create()
+                                                    ))
+                                                    .append(new TextComponent(
+                                                            new ComponentBuilder("//wand")
+                                                                    .color(ChatColor.GRAY)
+                                                                    .bold(true)
+                                                                    .create()
+                                                    ))
+                                                    .append("で木の斧を取り出します。 ")
+                                                    .append("木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 ")
+                                                    .append("この時、2つのブロックの間の直方体が選択範囲になります。 ")
+                                                    .append("選択ができたら、上にあるボタンを押して設計図を作ってください。 ")
+                                                    .create()
+                                            ))
+                                            .create()
+                            ))
+                            .append("]")
+                            .color(ChatColor.RESET)
+                            .create()
+                    );
                     return true;
                 }
 
