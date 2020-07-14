@@ -17,6 +17,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.World;
 import net.teamfruit.easystructure.fakepaste.FakeExtent;
 import net.teamfruit.easystructure.fakepaste.RealExtent;
 
@@ -27,12 +28,19 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class ESSession {
+    // Schematicキャッシュ
     public String currentSchematic;
     public Clipboard currentClipboard;
+
+    // Stateキャッシュ
     public String lastUuid;
     public PasteState lastPaste;
     public Timer timer = new Timer();
     public int yawOffsetInt;
+
+    // バッチキャッシュ
+    public World lastWorld;
+    public ChunkBatchingExtent lastBatchExtent;
 
     public static class Timer {
         private long lastTime;
@@ -163,23 +171,27 @@ public class ESSession {
 
     // 設計図を仮設置
     public void updateFakeSchematic(Player wPlayer, PasteState paste) {
-        FakeExtent fakeExtent = new FakeExtent(wPlayer.getWorld(), wPlayer);
-        ChunkBatchingExtent batchingExtent = new ChunkBatchingExtent(fakeExtent);
+        World wWorld = wPlayer.getWorld();
+        if (!Objects.equals(wWorld, lastWorld)) {
+            lastWorld = wWorld;
+            FakeExtent fakeExtent = new FakeExtent(wWorld, wPlayer);
+            lastBatchExtent = new ChunkBatchingExtent(fakeExtent);
+        }
 
         // Fakeロールバック
         if (lastPaste != null) {
-            RealExtent realExtent = new RealExtent(batchingExtent);
+            RealExtent realExtent = new RealExtent(lastBatchExtent);
             Operations.completeBlindly(lastPaste.createPlaceOperation(realExtent));
         }
 
         // フェイクブロック送信
         if (paste != null) {
-            Operations.completeBlindly(paste.createPlaceOperation(batchingExtent));
+            Operations.completeBlindly(paste.createPlaceOperation(lastBatchExtent));
         }
 
         // 変更を適用
-        if (batchingExtent.commitRequired())
-            Operations.completeBlindly(batchingExtent.commit());
+        if (lastBatchExtent.commitRequired())
+            Operations.completeBlindly(lastBatchExtent.commit());
 
         lastPaste = paste;
     }

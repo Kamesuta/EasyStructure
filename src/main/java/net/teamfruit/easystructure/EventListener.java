@@ -47,7 +47,7 @@ public class EventListener implements Listener {
 
         // 時計
         double span = 2750;
-        boolean visible = ((essession.timer.getTime() % span) / span) < 0.8;
+        boolean visible = true;// ((essession.timer.getTime() % span) / span) < 0.8;
 
         // スケマティックをクリップボードに読み込み
         final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
