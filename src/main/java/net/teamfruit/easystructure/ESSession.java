@@ -36,13 +36,29 @@ public class ESSession {
     public String currentSchematic;
     public Clipboard currentClipboard;
     public ChangeSet lastChangeSet;
+    public boolean lastVisible;
+    public Timer timer = new Timer();
+    public int yawOffsetInt;
     public String lastUuid;
     public BlockVector3 lastPosition;
-    public boolean lastVisible;
-    public long lastMoveTime;
     public int lastYawInt;
-    public int yawOffsetInt;
     public int lastYawOffsetInt;
+
+    public static class Timer {
+        private long lastTime;
+
+        public Timer() {
+            reset();
+        }
+
+        public void reset() {
+            lastTime = System.currentTimeMillis();
+        }
+
+        public long getTime() {
+            return System.currentTimeMillis() - lastTime;
+        }
+    }
 
     public boolean isValidId(String uuid) {
         if (uuid.equals(currentClipboard))
@@ -86,6 +102,20 @@ public class ESSession {
             currentClipboard = clipboard;
         }
         return clipboard;
+    }
+
+    public static class PasteOperation {
+        private BlockVector3 wPosition;
+        private Clipboard clipboard;
+        private Extent destination;
+        private int yawInt;
+
+        public PasteOperation(BlockVector3 wPosition, Clipboard clipboard, Extent destination, int yawInt) {
+            this.wPosition = wPosition;
+            this.clipboard = clipboard;
+            this.destination = destination;
+            this.yawInt = yawInt;
+        }
     }
 
     private Operation createPlaceOperation(BlockVector3 wPosition, Clipboard clipboard, Extent destination, int yawInt) {

@@ -46,11 +46,7 @@ public class EventListener implements Listener {
         BlockVector3 wPosition = ESUtils.getPlaceLocation(player);
 
         // 向き
-        float yaw = wPlayer.getLocation().getYaw();
-        int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
-
-        // 時計のための時刻
-        long time = System.currentTimeMillis();
+        int yawInt = ESUtils.getYawInt(wPlayer);
 
         // 状態が変わった
         boolean stateSame = yawInt == essession.lastYawInt
@@ -60,12 +56,11 @@ public class EventListener implements Listener {
 
         // 状態が変わったら時計をリセット
         if (!stateSame)
-            essession.lastMoveTime = time;
+            essession.timer.reset();
 
         // 時計
-        long clock = time - essession.lastMoveTime;
         double span = 2750;
-        boolean visible = ((clock % span) / span) < 0.8;
+        boolean visible = ((essession.timer.getTime() % span) / span) < 0.8;
 
         // 同じ状態なら更新しない
         if (stateSame && Objects.equals(visible, essession.lastVisible))

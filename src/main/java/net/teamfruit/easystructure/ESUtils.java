@@ -70,4 +70,10 @@ public class ESUtils {
                 )
                 .build();
     }
+
+    // 向きの方角
+    public static int getYawInt(com.sk89q.worldedit.entity.Player wPlayer) {
+        float yaw = wPlayer.getLocation().getYaw();
+        return (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
+    }
 }
