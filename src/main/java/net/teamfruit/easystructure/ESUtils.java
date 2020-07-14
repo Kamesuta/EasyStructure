@@ -76,4 +76,8 @@ public class ESUtils {
         float yaw = wPlayer.getLocation().getYaw();
         return (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
     }
+
+    public static int repeatInt(int value, int max) {
+        return (value % max + max) % max;
+    }
 }

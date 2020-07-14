@@ -5,25 +5,18 @@ import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.entity.Player;
-import com.sk89q.worldedit.extent.ChangeSetExtent;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
-import com.sk89q.worldedit.function.operation.ChangeSetExecutor;
+import com.sk89q.worldedit.extent.reorder.ChunkBatchingExtent;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.history.UndoContext;
-import com.sk89q.worldedit.history.changeset.BlockOptimizedHistory;
-import com.sk89q.worldedit.history.changeset.ChangeSet;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.session.ClipboardHolder;
-import com.sk89q.worldedit.world.block.BlockTypes;
-import com.sk89q.worldedit.world.block.FuzzyBlockState;
-import net.teamfruit.easystructure.fakepaste.DummyExtent;
 import net.teamfruit.easystructure.fakepaste.FakeExtent;
 import net.teamfruit.easystructure.fakepaste.RealExtent;
 
@@ -31,18 +24,15 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 public class ESSession {
     public String currentSchematic;
     public Clipboard currentClipboard;
-    public ChangeSet lastChangeSet;
-    public boolean lastVisible;
+    public String lastUuid;
+    public PasteState lastPaste;
     public Timer timer = new Timer();
     public int yawOffsetInt;
-    public String lastUuid;
-    public BlockVector3 lastPosition;
-    public int lastYawInt;
-    public int lastYawOffsetInt;
 
     public static class Timer {
         private long lastTime;
@@ -61,6 +51,9 @@ public class ESSession {
     }
 
     public boolean isValidId(String uuid) {
+        if (uuid == null)
+            return false;
+
         if (uuid.equals(currentClipboard))
             return true;
 
@@ -79,9 +72,12 @@ public class ESSession {
             return null;
 
         final Clipboard clipboard;
-        if (uuid.equals(currentClipboard))
+        if (uuid.equals(currentSchematic))
             clipboard = currentClipboard;
         else {
+            // IDの変更チェック用
+            currentSchematic = uuid;
+
             // 保存先
             File file = new File(EasyStructure.INSTANCE.schematicDirectory, uuid + ".schem");
 
@@ -98,72 +94,99 @@ public class ESSession {
             }
 
             // スケマティックをセッションに保存
-            currentSchematic = uuid;
             currentClipboard = clipboard;
         }
         return clipboard;
     }
 
-    public static class PasteOperation {
+    public static class PasteState {
+        private String uuid;
         private BlockVector3 wPosition;
         private Clipboard clipboard;
-        private Extent destination;
         private int yawInt;
+        private int yawOffsetInt;
 
-        public PasteOperation(BlockVector3 wPosition, Clipboard clipboard, Extent destination, int yawInt) {
+        private PasteState(String uuid, BlockVector3 wPosition, Clipboard clipboard, int yawInt, int yawOffsetInt) {
+            this.uuid = uuid;
             this.wPosition = wPosition;
             this.clipboard = clipboard;
-            this.destination = destination;
             this.yawInt = yawInt;
+            this.yawOffsetInt = yawOffsetInt;
         }
-    }
 
-    private Operation createPlaceOperation(BlockVector3 wPosition, Clipboard clipboard, Extent destination, int yawInt) {
-        ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
-        Transform transform = new AffineTransform().rotateY(yawInt * -90.0);
-        clipboardHolder.setTransform(transform);
+        // 引数がnullの場合はnullをreturn
+        public static PasteState createOrNull(String uuid, BlockVector3 wPosition, Clipboard clipboard, int yawInt, int yawOffsetInt) {
+            if (wPosition == null || clipboard == null)
+                return null;
+            return new PasteState(uuid, wPosition, clipboard, yawInt, yawOffsetInt);
+        }
 
-        BlockVector3 posSize0 = clipboard.getDimensions();
-        BlockVector3 posSize1 = BlockVector3.at(posSize0.getBlockX() / 2, 0, posSize0.getBlockZ());
-        BlockVector3 posSize2 = transform.apply(posSize1.toVector3()).toBlockPoint();
-        BlockVector3 posSize3 = BlockVector3.at(-posSize2.getBlockX(), 0, -posSize2.getBlockZ());
-        BlockVector3 pos = wPosition.add(posSize3);
+        // 貼り付け操作
+        @Nullable
+        public Operation createPlaceOperation(Extent destination) {
+            ClipboardHolder clipboardHolder = new ClipboardHolder(clipboard);
+            Transform transformNormal = new AffineTransform().rotateY(yawInt * -90.0);
+            Transform transformOffset = new AffineTransform().rotateY(yawOffsetInt * 90.0);
+            Transform transform = transformNormal.combine(transformOffset);
+            clipboardHolder.setTransform(transform);
 
-        Operation operation = clipboardHolder
-                .createPaste(destination)
-                .to(pos)
-                .ignoreAirBlocks(true)
-                // configure here
-                .build();
-        return operation;
+            BlockVector3 posSize0 = clipboard.getDimensions();
+            BlockVector3 posSize1 = BlockVector3.at(posSize0.getBlockX() / 2, 0, posSize0.getBlockZ() / 2);
+            BlockVector3 posSize2 = transform.apply(posSize1.toVector3()).toBlockPoint();
+            BlockVector3 posSize3 = BlockVector3.at(-posSize2.getBlockX(), 0, -posSize2.getBlockZ());
+            BlockVector3 pos = wPosition.add(posSize3);
+
+            Operation operation = clipboardHolder
+                    .createPaste(destination)
+                    .to(pos)
+                    .ignoreAirBlocks(true)
+                    // configure here
+                    .build();
+            return operation;
+        }
+
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PasteState that = (PasteState) o;
+            return yawInt == that.yawInt &&
+                    yawOffsetInt == that.yawOffsetInt &&
+                    Objects.equals(uuid, that.uuid) &&
+                    Objects.equals(wPosition, that.wPosition) &&
+                    Objects.equals(clipboard, that.clipboard);
+        }
+
+        @Override public int hashCode() {
+            return Objects.hash(uuid, wPosition, clipboard, yawInt, yawOffsetInt);
+        }
     }
 
     // 設計図を仮設置
-    public void updateFakeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, int yawInt, boolean isVisible) {
+    public void updateFakeSchematic(Player wPlayer, PasteState paste) {
+        FakeExtent fakeExtent = new FakeExtent(wPlayer.getWorld(), wPlayer);
+        ChunkBatchingExtent batchingExtent = new ChunkBatchingExtent(fakeExtent);
+
         // Fakeロールバック
-        if (lastChangeSet != null) {
-            Extent realExtent = new RealExtent(wPlayer.getWorld(), wPlayer);
-            UndoContext context = new UndoContext();
-            context.setExtent(realExtent);
-            Operations.completeBlindly(ChangeSetExecutor.createUndo(lastChangeSet, context));
-            lastChangeSet = null;
+        if (lastPaste != null) {
+            RealExtent realExtent = new RealExtent(batchingExtent);
+            Operations.completeBlindly(lastPaste.createPlaceOperation(realExtent));
         }
 
-        if (clipboard != null && wPosition != null && isVisible) {
-            // フェイクブロック送信
-            lastChangeSet = new BlockOptimizedHistory();
-            Extent fakeExtent = isVisible
-                    ? new FakeExtent(wPlayer.getWorld(), wPlayer)
-                    : new DummyExtent(wPlayer.getWorld(), wPlayer,
-                    FuzzyBlockState.builder().type(BlockTypes.GLASS).build());
-            Extent fakeChangeExtent = new ChangeSetExtent(fakeExtent, lastChangeSet);
-            Operations.completeBlindly(createPlaceOperation(wPosition, clipboard, fakeChangeExtent, yawInt));
+        // フェイクブロック送信
+        if (paste != null) {
+            Operations.completeBlindly(paste.createPlaceOperation(batchingExtent));
         }
+
+        // 変更を適用
+        if (batchingExtent.commitRequired())
+            Operations.completeBlindly(batchingExtent.commit());
+
+        lastPaste = paste;
     }
 
     // 設計図を設置
-    public void placeSchematic(Player wPlayer, BlockVector3 wPosition, Clipboard clipboard, int yawInt) throws WorldEditException {
-        if (clipboard != null && wPosition != null) {
+    public void placeSchematic(Player wPlayer, PasteState paste) throws WorldEditException {
+        if (paste != null) {
             // プレイヤーセッション
             LocalSession session = WorldEdit.getInstance()
                     .getSessionManager()
@@ -171,7 +194,7 @@ public class ESSession {
 
             // クリップボードからスケマティックを設置
             try (EditSession editSession = session.createEditSession(wPlayer)) {
-                Operations.complete(createPlaceOperation(wPosition, clipboard, editSession, yawInt));
+                Operations.complete(paste.createPlaceOperation(editSession));
                 // Undo履歴に記録
                 session.remember(editSession);
             }

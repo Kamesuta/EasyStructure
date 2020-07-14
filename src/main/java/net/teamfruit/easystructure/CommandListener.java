@@ -275,9 +275,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 uuid = UUID.randomUUID().toString();
 
                 // 向き
-                float yaw = wPlayer.getLocation().getYaw();
-                int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
-                essession.yawOffsetInt = yawInt;
+                essession.yawOffsetInt = ESUtils.getYawInt(wPlayer);
 
                 // スケマティックをクリップボードに保存
                 try (EditSession editSession = WorldEdit.getInstance()

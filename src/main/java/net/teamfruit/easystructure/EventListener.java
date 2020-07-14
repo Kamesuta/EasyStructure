@@ -45,37 +45,33 @@ public class EventListener implements Listener {
         // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
         BlockVector3 wPosition = ESUtils.getPlaceLocation(player);
 
-        // 向き
-        int yawInt = ESUtils.getYawInt(wPlayer);
-
-        // 状態が変わった
-        boolean stateSame = yawInt == essession.lastYawInt
-                && essession.yawOffsetInt == essession.lastYawOffsetInt
-                && Objects.equals(uuid, essession.lastUuid)
-                && Objects.equals(wPosition, essession.lastPosition);
-
-        // 状態が変わったら時計をリセット
-        if (!stateSame)
-            essession.timer.reset();
-
         // 時計
         double span = 2750;
         boolean visible = ((essession.timer.getTime() % span) / span) < 0.8;
 
-        // 同じ状態なら更新しない
-        if (stateSame && Objects.equals(visible, essession.lastVisible))
-            return;
-        essession.lastUuid = uuid;
-        essession.lastPosition = wPosition;
-        essession.lastVisible = visible;
-        essession.lastYawInt = yawInt;
-        essession.lastYawOffsetInt = essession.yawOffsetInt;
-
         // スケマティックをクリップボードに読み込み
         final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
 
+        // ペースト
+        ESSession.PasteState paste = null;
+        if (visible)
+            paste = ESSession.PasteState.createOrNull(uuid, wPosition, clipboard, ESUtils.getYawInt(wPlayer), essession.yawOffsetInt);
+
+        // 状態が変わった
+        boolean stateSame = Objects.equals(paste, essession.lastPaste);
+
+        // 同じ状態なら更新しない
+        if (stateSame)
+            return;
+
+        // 状態が変わったら時計をリセット
+        essession.timer.reset();
+
         // フェイクブロック更新
-        essession.updateFakeSchematic(wPlayer, wPosition, clipboard, yawInt - essession.yawOffsetInt, visible);
+        essession.updateFakeSchematic(wPlayer, paste);
+
+        essession.lastUuid = uuid;
+        essession.lastPaste = paste;
     }
 
     @EventHandler
@@ -95,7 +91,7 @@ public class EventListener implements Listener {
 
         // 回転
         event.setCancelled(true);
-        essession.yawOffsetInt = (essession.yawOffsetInt + 1) % 4;
+        essession.yawOffsetInt = ESUtils.repeatInt(essession.yawOffsetInt + 1, 4);
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -129,10 +125,6 @@ public class EventListener implements Listener {
             if (wPosition == null)
                 return;
 
-            // 向き
-            float yaw = wPlayer.getLocation().getYaw();
-            int yawInt = (int) ((((yaw - 135f) % 360f + 360f) % 360f) / 90f);
-
             // スケマティックをクリップボードに読み込み
             final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
             if (clipboard == null) {
@@ -140,8 +132,11 @@ public class EventListener implements Listener {
                 return;
             }
 
+            // ペースト
+            ESSession.PasteState paste = ESSession.PasteState.createOrNull(uuid, wPosition, clipboard, ESUtils.getYawInt(wPlayer), essession.yawOffsetInt);
+
             // フェイクブロック更新
-            essession.placeSchematic(wPlayer, wPosition, clipboard, yawInt - essession.yawOffsetInt);
+            essession.placeSchematic(wPlayer, paste);
 
             // アイテム名取得
             String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
