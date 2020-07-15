@@ -17,6 +17,9 @@ public final class EasyStructure extends JavaPlugin {
         // Plugin startup logic
         new Config().configure();
 
+        // 言語
+        I18n.setLocale(getConfig().getString(Config.SETTING_LOCALE));
+
         // スケマティックフォルダ初期化
         schematicDirectory = new File(getDataFolder(), "schematics");
         schematicDirectory.mkdirs();
@@ -32,5 +35,9 @@ public final class EasyStructure extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public File getFile() {
+        return super.getFile();
     }
 }

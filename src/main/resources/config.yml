@@ -1,0 +1,18 @@
+# Localization Settings
+# Localization File, "en_US.lang", "ja_JP.lang" is available.
+# You can add additional language file into plugins/EasyStructure/lang/
+locale:
+  file: en_US.lang
+place:
+  range: 128
+  log: false
+global:
+  auto updater:
+    notify: true
+    download: false
+    delay: 43200
+  metrics: true
+  background compiler: true
+  debug: false
+  detailed error: false
+  script engine: JavaScript
