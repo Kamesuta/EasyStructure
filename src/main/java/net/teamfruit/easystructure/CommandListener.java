@@ -22,6 +22,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.apache.commons.lang.LocaleUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -32,10 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class CommandListener implements CommandExecutor, TabCompleter {
@@ -316,7 +314,8 @@ public class CommandListener implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         final List<String> completions = new ArrayList<>();
         if (args.length == 1 || args.length == 2) {
-            String date = new SimpleDateFormat(I18n.format("command.completion.date")).format(new Date());
+            Locale locale = LocaleUtils.toLocale(I18n.format("java.locale"));
+            String date = new SimpleDateFormat(I18n.format("command.completion.date"), locale).format(new Date());
             completions.add(I18n.format("command.completion.text.withname", sender.getName(), date));
             completions.add(I18n.format("command.completion.text.dateonly", date));
         }

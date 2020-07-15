@@ -1,47 +1,47 @@
-java.locale=ja_JP
+java.locale=en_US
 
-es.error.worldedit=WorldEditエラー: %s
-es.error.ioerror=セーブに失敗しました: %s
+es.error.worldedit=WorldEdit Error: %s
+es.error.ioerror=Failed to save: %s
 
-action.error.deleted=この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)
-action.success.actionbar=§%s設計図を設置しました。
+action.error.deleted=This schematic is no longer available. (Reason: The server administrator deleted the file.)
+action.success.actionbar=§%sYou placed the schematic.
 
 item.name.type=設計図
 
-command.error.playeronly=プレイヤーのみが設計図を作成できます。
-command.error.invalidid=設計図IDが不正です。IDに間違いがないか確認してください。
-command.error.noselection=範囲が選択されていません。WorldEditで範囲を選択してください。
+command.error.playeronly=Only player can create a schematic.
+command.error.invalidid=Invalid ID. Check your schematic ID.
+command.error.noselection=Nothing is selected. Select the area with WorldEdit.
 
-command.success.created=設計図%sを作成しました。
+command.success.created=You created the schematic %s.
 
-command.completion.date=M月d日(E)H時m分
-command.completion.text.withname=%sの建築%s
-command.completion.text.dateonly=設計図%s
+command.completion.date=M/d(E) H:m
+command.completion.text.withname=%s's structure %s
+command.completion.text.dateonly=Structure %s
 
 command.menu.header.start=======
 command.menu.header.end=======
 
-command.menu.title.title=EasyStructureメニュー
-command.menu.title.title.desc=猿でもわかるコピペプラグインへようこそ！。
+command.menu.title.title=EasyStructure Menu
+command.menu.title.title.desc=Welcome to EASY copy and paste plugin!
 command.menu.title.desc=このプラグインは設計図(ブレイズロッド)を振るだけで建物がホイホイとできるよ。 下のボタンから、設計図の作成や、設計図の共有ができるよ。 また、Discord等に貼ってあるコマンドをコピーすると設計図を入手できるよ。
 
-command.menu.button.args.name=<名前>
+command.menu.button.args.name=<Name>
 
-command.menu.button.create=WEの範囲から作成
+command.menu.button.create=Create from WE Area
 command.menu.button.create.desc.before=WorldEditの選択範囲から設計図を作成します。 クリックするとコマンドが入力されるので、
 command.menu.button.create.desc.after=の部分を好きな名前に置き換えてください。
 
-command.menu.button.share=設計図をDiscord等で共有
+command.menu.button.share=Share via Discord　etc...
 command.menu.button.share.unavailable.desc.before=設計図
 command.menu.button.share.unavailable.desc.after=を召喚できるコマンドをクリップボードにコピーします。 Discord等にコピーされたコマンドを貼り付けてください。 クリックしても反応がないですが、ちゃんとコピーされているのでご安心ください。
 command.menu.button.share.unavailable=✕
-command.menu.button.share.available.desc.before=設計図を手に持ってください。
+command.menu.button.share.available.desc.before=Please have schematic in your hand.
 command.menu.button.share.available.desc.after=手持ちの設計図を召喚できるコマンドをクリップボードにコピーします。
 
 command.menu.footer.start=================================
 command.menu.footer.end=
 
 command.menu.help=?
-command.menu.help.desc.title=WorldEditでの範囲の選択方法がわからない人へ。
+command.menu.help.desc.title=For those who don't know how to select an area in WorldEdit.
 command.menu.help.desc.before=
 command.menu.help.desc.after=で木の斧を取り出します。 木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 この時、2つのブロックの間の直方体が選択範囲になります。 選択ができたら、上にあるボタンを押して設計図を作ってください。
