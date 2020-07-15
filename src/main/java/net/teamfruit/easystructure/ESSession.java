@@ -124,7 +124,7 @@ public class ESSession {
 
         // 引数がnullの場合はnullをreturn
         public static PasteState createOrNull(String uuid, BlockVector3 wPosition, Clipboard clipboard, int yawInt, int yawOffsetInt) {
-            if (wPosition == null || clipboard == null)
+            if (uuid == null || wPosition == null || clipboard == null)
                 return null;
             return new PasteState(uuid, wPosition, clipboard, yawInt, yawOffsetInt);
         }

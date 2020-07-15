@@ -36,7 +36,6 @@ public class ESSessionManager {
         checkNotNull(owner);
 
         ESSession session = getIfPresent(owner);
-        SessionKey sessionKey = owner.getSessionKey();
 
         // No session exists yet -- create one
         if (session == null) {
@@ -44,19 +43,17 @@ public class ESSessionManager {
 
             // Remember the session regardless of if it's currently active or not.
             // And have the SessionTracker FLUSH inactive sessions.
-            sessions.put(getKey(owner), new SessionHolder(sessionKey, session));
+            sessions.put(getKey(owner), new SessionHolder(session));
         }
 
         return session;
     }
 
     private static final class SessionHolder {
-        private final SessionKey key;
         private final ESSession session;
         //private long lastActive = System.currentTimeMillis();
 
-        private SessionHolder(SessionKey key, ESSession session) {
-            this.key = key;
+        private SessionHolder(ESSession session) {
             this.session = session;
         }
     }

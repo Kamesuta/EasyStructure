@@ -29,7 +29,11 @@ public class EventListener implements Listener {
             @Override
             public void run() {
                 for (final Player player : EasyStructure.INSTANCE.getServer().getOnlinePlayers()) {
-                    onEffect(player);
+                    try {
+                        onEffect(player);
+                    } catch (Exception e) {
+                        Log.log.log(Level.WARNING, "Error while EasyStructure Guide Effect", e);
+                    }
                 }
             }
         }.runTaskTimer(EasyStructure.INSTANCE, 0, 1);
