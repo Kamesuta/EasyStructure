@@ -147,7 +147,7 @@ public class EventListener implements Listener {
 
             // 設定でONのときログ出力
             if (EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_LOG))
-                Log.log.log(Level.INFO, String.format("%s placed schematic ( %s : %s ).", player.getName(), title, uuid));
+                Log.log.log(Level.INFO, String.format("%s placed schematic ( %s : %s ) to (%d, %d, %d).", player.getName(), title, uuid, wPosition.getBlockX(), wPosition.getBlockY(), wPosition.getBlockZ()));
 
             // アクションバー
             player.sendActionBar(I18n.format("action.success.actionbar", Integer.toHexString(random.nextInt(16))));
