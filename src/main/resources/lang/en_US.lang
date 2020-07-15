@@ -6,7 +6,7 @@ es.error.ioerror=Failed to save: %s
 action.error.deleted=This schematic is no longer available. (Reason: The server administrator deleted the file.)
 action.success.actionbar=§%sYou placed the schematic.
 
-item.name.type=設計図
+item.name.type=Structure
 
 command.error.playeronly=Only player can create a schematic.
 command.error.invalidid=Invalid ID. Check your schematic ID.
@@ -23,20 +23,20 @@ command.menu.header.end=======
 
 command.menu.title.title=EasyStructure Menu
 command.menu.title.title.desc=Welcome to EASY copy and paste plugin!
-command.menu.title.desc=このプラグインは設計図(ブレイズロッド)を振るだけで建物がホイホイとできるよ。 下のボタンから、設計図の作成や、設計図の共有ができるよ。 また、Discord等に貼ってあるコマンドをコピーすると設計図を入手できるよ。
+command.menu.title.desc=With this plug-in, you can make a building just by shaking the schematic (blaze rod). From the buttons below, you can create schematics and share schematics. You can also get the schematic by copying the command attached to Discord.
 
 command.menu.button.args.name=<Name>
 
 command.menu.button.create=Create from WE Area
-command.menu.button.create.desc.before=WorldEditの選択範囲から設計図を作成します。 クリックするとコマンドが入力されるので、
-command.menu.button.create.desc.after=の部分を好きな名前に置き換えてください。
+command.menu.button.create.desc.before=Create a schematic from the selection in WorldEdit. Click to enter the command, so
+command.menu.button.create.desc.after=Replace the part of with your favorite name.
 
 command.menu.button.share=Share via Discord　etc...
-command.menu.button.share.unavailable.desc.before=設計図
-command.menu.button.share.unavailable.desc.after=を召喚できるコマンドをクリップボードにコピーします。 Discord等にコピーされたコマンドを貼り付けてください。 クリックしても反応がないですが、ちゃんとコピーされているのでご安心ください。
+command.menu.button.share.unavailable.desc.before=Schematic
+command.menu.button.share.unavailable.desc.after=Copy the commands that can summon to the clipboard. Paste the command copied to Discord etc. There is no response when clicked, but please be assured that it is copied properly.
 command.menu.button.share.unavailable=✕
 command.menu.button.share.available.desc.before=Please have schematic in your hand.
-command.menu.button.share.available.desc.after=手持ちの設計図を召喚できるコマンドをクリップボードにコピーします。
+command.menu.button.share.available.desc.after=Copy the command that allows you to summon your schematics to the clipboard.
 
 command.menu.footer.start=================================
 command.menu.footer.end=
@@ -44,4 +44,4 @@ command.menu.footer.end=
 command.menu.help=?
 command.menu.help.desc.title=For those who don't know how to select an area in WorldEdit.
 command.menu.help.desc.before=
-command.menu.help.desc.after=で木の斧を取り出します。 木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 この時、2つのブロックの間の直方体が選択範囲になります。 選択ができたら、上にあるボタンを押して設計図を作ってください。
+command.menu.help.desc.after=Take out the wooden ax. Hold the wooden ax and left-click and right-click on the two blocks respectively. At this time, the rectangular area between the two blocks becomes the selection area. Once you have made your choice, press the button above to make a schematic.
