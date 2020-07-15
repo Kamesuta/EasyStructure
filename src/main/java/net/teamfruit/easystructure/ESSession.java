@@ -153,7 +153,8 @@ public class ESSession {
             return operation;
         }
 
-        @Override public boolean equals(Object o) {
+        @Override
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             PasteState that = (PasteState) o;
@@ -164,7 +165,8 @@ public class ESSession {
                     Objects.equals(clipboard, that.clipboard);
         }
 
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             return Objects.hash(uuid, wPosition, clipboard, yawInt, yawOffsetInt);
         }
     }

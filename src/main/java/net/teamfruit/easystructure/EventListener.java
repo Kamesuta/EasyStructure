@@ -132,7 +132,7 @@ public class EventListener implements Listener {
             // スケマティックをクリップボードに読み込み
             final Clipboard clipboard = essession.getClipboardCachedFromId(uuid);
             if (clipboard == null) {
-                player.sendMessage("この設計図はもう使えません。(原因: 鯖のファイルいじれる人が設計図を消した。)");
+                player.sendMessage(I18n.format("action.error.deleted"));
                 return;
             }
 
@@ -150,11 +150,11 @@ public class EventListener implements Listener {
                 Log.log.log(Level.INFO, String.format("%s placed schematic ( %s : %s ).", player.getName(), title, uuid));
 
             // アクションバー
-            player.sendActionBar("§" + Integer.toHexString(random.nextInt(16)) + "設計図を設置しました。");
+            player.sendActionBar(I18n.format("action.success.actionbar", Integer.toHexString(random.nextInt(16))));
 
         } catch (WorldEditException e) {
             Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
-            player.sendMessage("WorldEditエラー: " + e.getMessage());
+            player.sendMessage(I18n.format("es.error.worldedit", e.getMessage()));
         }
     }
 }

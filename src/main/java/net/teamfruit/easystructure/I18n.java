@@ -1,20 +1,13 @@
 package net.teamfruit.easystructure;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.IllegalFormatException;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -40,12 +33,12 @@ public class I18n {
             final ZipEntry entryDef = pluginZip.getEntry("lang/" + langDef);
             if (resDef.exists())
                 try {
-                    properties.load(new FileInputStream(resDef));
+                    properties.load(new InputStreamReader(new FileInputStream(resDef), StandardCharsets.UTF_8));
                 } catch (final IOException e) {
                 }
             if (entryDef != null)
                 try {
-                    properties.load(pluginZip.getInputStream(entryDef));
+                    properties.load(new InputStreamReader(pluginZip.getInputStream(entryDef)));
                 } catch (final IOException e) {
                 }
         } catch (final IOException e1) {

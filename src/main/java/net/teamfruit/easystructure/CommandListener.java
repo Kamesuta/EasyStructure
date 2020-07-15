@@ -42,7 +42,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("プレイヤーのみが設計図を作成できます。");
+            sender.sendMessage(I18n.format("command.error.playeronly"));
             return true;
         }
 
@@ -62,31 +62,29 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 player.sendMessage("");
 
                 player.sendMessage(new ComponentBuilder()
-                        .append("======")
+                        .append(I18n.format("command.menu.header.start"))
                         .color(ChatColor.GRAY)
                         .append("[")
                         .color(ChatColor.RESET)
                         .append(new TextComponent(
-                                new ComponentBuilder("EasyStructureメニュー")
+                                new ComponentBuilder(I18n.format("command.menu.title.title"))
                                         .color(ChatColor.BLUE)
                                         .bold(true)
                                         .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
                                                 .append(new TextComponent(
-                                                        new ComponentBuilder("猿でもわかるコピペプラグインへようこそ！。 ")
+                                                        new ComponentBuilder(I18n.format("command.menu.title.title.desc"))
                                                                 .color(ChatColor.BLUE)
                                                                 .bold(true)
                                                                 .create()
                                                 ))
-                                                .append("このプラグインは設計図(ブレイズロッド)を振るだけで建物がホイホイとできるよ。 ")
-                                                .append("下のボタンから、設計図の作成や、設計図の共有ができるよ。 ")
-                                                .append("また、Discord等に貼ってあるコマンドをコピーすると設計図を入手できるよ。 ")
+                                                .append(I18n.format("command.menu.title.desc"))
                                                 .create()
                                         ))
                                         .create()
                         ))
                         .append("]")
                         .color(ChatColor.RESET)
-                        .append("======")
+                        .append(I18n.format("command.menu.header.end"))
                         .color(ChatColor.GRAY)
                         .create());
 
@@ -96,22 +94,21 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 {
                     component2.append(new ComponentBuilder()
                             .append(new TextComponent("["))
-                            .append(new TextComponent(new ComponentBuilder("WEの範囲から作成")
+                            .append(new TextComponent(new ComponentBuilder(I18n.format("command.menu.button.create"))
                                     .underlined(true)
                                     .color(ChatColor.GREEN)
                                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
-                                            .append("WorldEditの選択範囲から設計図を作成します。 ")
-                                            .append("クリックするとコマンドが入力されるので、")
+                                            .append(I18n.format("command.menu.button.create.desc.before"))
                                             .append(new TextComponent(
-                                                    new ComponentBuilder("<名前>")
+                                                    new ComponentBuilder(I18n.format("command.menu.button.args.name"))
                                                             .color(ChatColor.GRAY)
                                                             .bold(true)
                                                             .create()
                                             ))
-                                            .append("の部分を好きな名前に置き換えてください。 ")
+                                            .append(I18n.format("command.menu.button.create.desc.after"))
                                             .create()
                                     ))
-                                    .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/es <名前>"))
+                                    .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/es " + I18n.format("command.menu.button.args.name")))
                                     .create()
                             ))
                             .append(new TextComponent("]"))
@@ -124,41 +121,41 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 if (uuid != null) {
                     String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
                     componentA
-                            .append("設計図をDiscord等で共有")
+                            .append(I18n.format("command.menu.button.share"))
                             .color(ChatColor.GREEN)
                             .underlined(true)
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
-                                    .append("設計図[")
+                                    .append(I18n.format("command.menu.button.share.unavailable.desc.before"))
+                                    .append("[")
                                     .append(new TextComponent(
                                             new ComponentBuilder(title)
                                                     .color(ChatColor.GREEN)
                                                     .create()
                                     ))
-                                    .append("]を召喚できるコマンドをクリップボードにコピーします。 ")
-                                    .append("Discord等にコピーされたコマンドを貼り付けてください。 ")
-                                    .append("クリックしても反応がないですが、ちゃんとコピーされているのでご安心ください。 ")
+                                    .append("]")
+                                    .append(I18n.format("command.menu.button.share.unavailable.desc.after"))
                                     .create()
                             ))
                             .event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "/es " + uuid + " " + title));
                 } else {
                     componentA
                             .append(new TextComponent(
-                                    new ComponentBuilder("✕")
+                                    new ComponentBuilder(I18n.format("command.menu.button.share.unavailable"))
                                             .color(ChatColor.RED)
                                             .bold(true)
                                             .create()
                             ))
                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
                                     .append(new TextComponent(
-                                            new ComponentBuilder("設計図を手に持ってください。 ")
+                                            new ComponentBuilder(I18n.format("command.menu.button.share.available.desc.before"))
                                                     .color(ChatColor.RED)
                                                     .bold(true)
                                                     .create()
                                     ))
-                                    .append("手持ちの設計図を召喚できるコマンドをクリップボードにコピーします。 ")
+                                    .append(I18n.format("command.menu.button.share.available.desc.after"))
                                     .create()
                             ))
-                            .append("設計図をDiscord等で共有")
+                            .append(I18n.format("command.menu.button.share"))
                             .color(ChatColor.GRAY)
                             .underlined(true);
                 }
@@ -173,36 +170,36 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 player.sendMessage("");
 
                 player.sendMessage(new ComponentBuilder()
-                        .append("================================")
+                        .append(I18n.format("command.menu.footer.start"))
                         .color(ChatColor.GRAY)
                         .append("[")
                         .color(ChatColor.RESET)
                         .append(new TextComponent(
-                                new ComponentBuilder("?")
+                                new ComponentBuilder(I18n.format("command.menu.help"))
                                         .color(ChatColor.GREEN)
                                         .bold(true)
                                         .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
                                                 .append(new TextComponent(
-                                                        new ComponentBuilder("WorldEditでの範囲の選択方法がわからない人へ。 ")
+                                                        new ComponentBuilder(I18n.format("command.menu.help.desc.title"))
                                                                 .color(ChatColor.BLUE)
                                                                 .bold(true)
                                                                 .create()
                                                 ))
+                                                .append(I18n.format("command.menu.help.desc.before"))
                                                 .append(new TextComponent(
                                                         new ComponentBuilder("//wand")
                                                                 .color(ChatColor.GRAY)
                                                                 .bold(true)
                                                                 .create()
                                                 ))
-                                                .append("で木の斧を取り出します。 ")
-                                                .append("木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 ")
-                                                .append("この時、2つのブロックの間の直方体が選択範囲になります。 ")
-                                                .append("選択ができたら、上にあるボタンを押して設計図を作ってください。 ")
+                                                .append(I18n.format("command.menu.help.desc.after"))
                                                 .create()
                                         ))
                                         .create()
                         ))
                         .append("]")
+                        .color(ChatColor.RESET)
+                        .append(I18n.format("command.menu.footer.end"))
                         .color(ChatColor.RESET)
                         .create());
 
@@ -220,7 +217,7 @@ public class CommandListener implements CommandExecutor, TabCompleter {
                 title = ESUtils.getArgs(args, 1);
 
                 if (!essession.isValidId(uuid)) {
-                    player.sendMessage("設計図IDが不正です。IDに間違いがないか確認してください。");
+                    player.sendMessage(I18n.format("command.error.invalidid"));
                     return true;
                 }
             } else {
@@ -233,30 +230,28 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
                 if (!session.isSelectionDefined(wWorld)) {
                     player.sendMessage(new ComponentBuilder()
-                            .append("範囲が選択されていません。WorldEditで範囲を選択してください。")
+                            .append(I18n.format("command.error.noselection"))
                             .append("[")
                             .color(ChatColor.RESET)
                             .append(new TextComponent(
-                                    new ComponentBuilder("?")
+                                    new ComponentBuilder(I18n.format("command.menu.help"))
                                             .color(ChatColor.GREEN)
                                             .bold(true)
                                             .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder()
                                                     .append(new TextComponent(
-                                                            new ComponentBuilder("WorldEditでの範囲の選択方法がわからない人へ。 ")
+                                                            new ComponentBuilder(I18n.format("command.menu.help.desc.title"))
                                                                     .color(ChatColor.BLUE)
                                                                     .bold(true)
                                                                     .create()
                                                     ))
+                                                    .append(I18n.format("command.menu.help.desc.before"))
                                                     .append(new TextComponent(
                                                             new ComponentBuilder("//wand")
                                                                     .color(ChatColor.GRAY)
                                                                     .bold(true)
                                                                     .create()
                                                     ))
-                                                    .append("で木の斧を取り出します。 ")
-                                                    .append("木の斧をもって2つのブロックにそれぞれ左クリック、右クリックをします。 ")
-                                                    .append("この時、2つのブロックの間の直方体が選択範囲になります。 ")
-                                                    .append("選択ができたら、上にあるボタンを押して設計図を作ってください。 ")
+                                                    .append(I18n.format("command.menu.help.desc.after"))
                                                     .create()
                                             ))
                                             .create()
@@ -304,14 +299,14 @@ public class CommandListener implements CommandExecutor, TabCompleter {
             BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
             wPlayer.giveItem(itemStack);
 
-            player.sendMessage("設計図" + (title != null ? "[" + title + "]" : "") + "を作成しました。");
+            player.sendMessage(I18n.format("command.success.created", (title != null ? "[" + title + "]" : "")));
 
         } catch (WorldEditException e) {
             Log.log.log(Level.WARNING, "WorldEdit Error: ", e);
-            player.sendMessage("WorldEditエラー: " + e.getMessage());
+            player.sendMessage(I18n.format("es.error.worldedit", e.getMessage()));
         } catch (IOException e) {
             Log.log.log(Level.WARNING, "IO Error: ", e);
-            player.sendMessage("セーブに失敗しました: " + e.getMessage());
+            player.sendMessage(I18n.format("es.error.ioerror", e.getMessage()));
         }
 
         return true;
@@ -321,8 +316,9 @@ public class CommandListener implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         final List<String> completions = new ArrayList<>();
         if (args.length == 1 || args.length == 2) {
-            completions.add(sender.getName() + "の建築" + new SimpleDateFormat("M月d日(E)H時m分").format(new Date()));
-            completions.add("設計図" + new SimpleDateFormat("M月d日(E)H時m分").format(new Date()));
+            String date = new SimpleDateFormat(I18n.format("command.completion.date")).format(new Date());
+            completions.add(I18n.format("command.completion.text.withname", sender.getName(), date));
+            completions.add(I18n.format("command.completion.text.dateonly", date));
         }
         return completions;
     }

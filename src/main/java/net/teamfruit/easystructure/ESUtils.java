@@ -62,7 +62,7 @@ public class ESUtils {
                 .put("display", CompoundTagBuilder.create()
                         .put("Name", new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_green\",\"italic\":false}", title)))
                         .put("Lore", ListTagBuilder.create(StringTag.class)
-                                .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_gray\",\"italic\":false}", "設計図")))
+                                .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_gray\",\"italic\":false}", I18n.format("item.name.type"))))
                                 .add(new StringTag(String.format("{\"text\":\"%s\",\"color\":\"dark_gray\",\"italic\":false}", uuid)))
                                 .build()
                         )
