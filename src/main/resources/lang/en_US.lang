@@ -14,34 +14,34 @@ command.error.noselection=Nothing is selected. Select the area with WorldEdit.
 
 command.success.created=You created the schematic %s.
 
-command.completion.date=M/d(E) H:m
-command.completion.text.withname=%s's structure %s
-command.completion.text.dateonly=Structure %s
+command.completion.date=M/d(E)_H:m
+command.completion.text.withname=%s's_structure_%s
+command.completion.text.dateonly=Structure_%s
 
-command.menu.header.start=======
-command.menu.header.end=======
+command.menu.header.start==========
+command.menu.header.end==========
 
 command.menu.title.title=EasyStructure Menu
 command.menu.title.title.desc=Welcome to EASY copy and paste plugin!
-command.menu.title.desc=With this plug-in, you can make a building just by shaking the schematic (blaze rod). From the buttons below, you can create schematics and share schematics. You can also get the schematic by copying the command attached to Discord.
+command.menu.title.desc=With this plug-in, you can make a building just by shaking the schematic (Blaze Rod). From the buttons below, you can create schematics and share schematics. You can also get the schematic by copying the command attached to Discord.
 
 command.menu.button.args.name=<Name>
 
 command.menu.button.create=Create from WE Area
-command.menu.button.create.desc.before=Create a schematic from the selection in WorldEdit. Click to enter the command, so
-command.menu.button.create.desc.after=Replace the part of with your favorite name.
+command.menu.button.create.desc.before=Create a schematic from the selection in WorldEdit. Click to enter the command. Replace
+command.menu.button.create.desc.after= to anything you want.
 
-command.menu.button.share=Share via Discord　etc...
-command.menu.button.share.unavailable.desc.before=Schematic
-command.menu.button.share.unavailable.desc.after=Copy the commands that can summon to the clipboard. Paste the command copied to Discord etc. There is no response when clicked, but please be assured that it is copied properly.
+command.menu.button.share=Share via Discord etc...
+command.menu.button.share.unavailable.desc.before=Commands that can summon the Schematic
+command.menu.button.share.unavailable.desc.after= will be copied to the clipboard. Paste it to Discord etc. You might be noticed that is no response when clicked, but it will be copied properly.
 command.menu.button.share.unavailable=✕
 command.menu.button.share.available.desc.before=Please have schematic in your hand.
 command.menu.button.share.available.desc.after=Copy the command that allows you to summon your schematics to the clipboard.
 
-command.menu.footer.start=================================
+command.menu.footer.start=======================================
 command.menu.footer.end=
 
 command.menu.help=?
 command.menu.help.desc.title=For those who don't know how to select an area in WorldEdit.
 command.menu.help.desc.before=
-command.menu.help.desc.after=Take out the wooden ax. Hold the wooden ax and left-click and right-click on the two blocks respectively. At this time, the rectangular area between the two blocks becomes the selection area. Once you have made your choice, press the button above to make a schematic.
+command.menu.help.desc.after=Take out the Wooden Axe. Hold the Wooden Axe and left-click and right-click on the two blocks respectively. At this time, the rectangular area between the two blocks becomes the selection area. Once you have made your choice, press the button above to make a schematic.
