@@ -4,6 +4,7 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitPlayer;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -39,6 +40,7 @@ public class ESSession {
     public int yawOffsetInt;
 
     // バッチキャッシュ
+    public int lastEntityId;
     public World lastWorld;
     public ChunkBatchingExtent lastBatchExtent;
 
@@ -174,7 +176,9 @@ public class ESSession {
     // 設計図を仮設置
     public void updateFakeSchematic(Player wPlayer, PasteState paste) {
         World wWorld = wPlayer.getWorld();
-        if (!Objects.equals(wWorld, lastWorld)) {
+        int entityId = wPlayer instanceof BukkitPlayer ? ((BukkitPlayer) wPlayer).getPlayer().getEntityId() : 0;
+        if (entityId != lastEntityId || !Objects.equals(wWorld, lastWorld)) {
+            lastEntityId = entityId;
             lastWorld = wWorld;
             FakeExtent fakeExtent = new FakeExtent(wWorld, wPlayer);
             lastBatchExtent = new ChunkBatchingExtent(fakeExtent);
