@@ -4,11 +4,11 @@ es.error.worldedit=WorldEdit Error: %s
 es.error.ioerror=Failed to save: %s
 
 action.error.deleted=This schematic is no longer available. (Reason: The server administrator deleted the file.)
-action.success.actionbar=§%sYou placed the schematic.
+action.success.actionbar=§%sSchematic successfully placed.
 
 item.name.type=Structure
 
-command.error.playeronly=Only player can create a schematic.
+command.error.playeronly=Only a player can create a schematic.
 command.error.invalidid=Invalid ID. Check your schematic ID.
 command.error.noselection=Nothing is selected. Select the area with WorldEdit.
 
@@ -23,12 +23,12 @@ command.menu.header.end==========
 
 command.menu.title.title=EasyStructure Menu
 command.menu.title.title.desc=Welcome to EASY copy and paste plugin!
-command.menu.title.desc=With this plug-in, you can make a building just by shaking the schematic (Blaze Rod). From the buttons below, you can create schematics and share schematics. You can also get the schematic by copying the command attached to Discord.
+command.menu.title.desc=With this plug-in, you can make a building just by using the schematic (Blaze Rod). With the buttons below, you can create schematics and share them. You can also get the schematic by copying the command attached to Discord.
 
-command.menu.button.args.name=<Name>
+command.menu.button.args.name= <Name>
 
 command.menu.button.create=Create from WE Area
-command.menu.button.create.desc.before=Create a schematic from the selection in WorldEdit. Click to enter the command. Replace
+command.menu.button.create.desc.before=Create a schematic from the selection in WorldEdit. Clicking will enter the command automatically. So you can replace
 command.menu.button.create.desc.after= to anything you want.
 
 command.menu.button.share=Share via Discord etc...
@@ -44,4 +44,4 @@ command.menu.footer.end=
 command.menu.help=?
 command.menu.help.desc.title=For those who don't know how to select an area in WorldEdit.
 command.menu.help.desc.before=
-command.menu.help.desc.after=Take out the Wooden Axe. Hold the Wooden Axe and left-click and right-click on the two blocks respectively. At this time, the rectangular area between the two blocks becomes the selection area. Once you have made your choice, press the button above to make a schematic.
+command.menu.help.desc.after=Take out the Wooden Axe. Hold the Wooden Axe and left-click and right-click on the two blocks respectively. Then, the rectangular area between the two blocks becomes the selection area. Once you have made your choice, press the button above to make a schematic.
