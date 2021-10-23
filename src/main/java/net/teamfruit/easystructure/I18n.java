@@ -38,7 +38,7 @@ public class I18n {
                 }
             if (entryDef != null)
                 try {
-                    properties.load(new InputStreamReader(pluginZip.getInputStream(entryDef)));
+                    properties.load(new InputStreamReader(pluginZip.getInputStream(entryDef), StandardCharsets.UTF_8));
                 } catch (final IOException e) {
                 }
         } catch (final IOException e1) {
