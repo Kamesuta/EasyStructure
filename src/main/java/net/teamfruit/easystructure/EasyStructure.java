@@ -18,7 +18,8 @@ public final class EasyStructure extends JavaPlugin {
         new Config().configure();
 
         // 言語
-        I18n.setLocale(getConfig().getString(Config.SETTING_LOCALE));
+        String locale = getConfig().getString(Config.SETTING_LOCALE);
+        I18n.setLocale(locale);
 
         // スケマティックフォルダ初期化
         schematicDirectory = new File(getDataFolder(), "schematics");

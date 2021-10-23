@@ -17,7 +17,8 @@ public class ESUtils {
     // アイテムからUUIDを取得
     @Nullable
     public static String getWandId(BaseItemStack itemStack) {
-        if (itemStack.getType() == ItemTypes.BLAZE_ROD && itemStack.hasNbtData()) {
+        boolean bCustomItem = EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_CUSTOM_ITEM);
+        if ((bCustomItem || itemStack.getType() == ItemTypes.BLAZE_ROD) && itemStack.hasNbtData()) {
             CompoundTag tag = itemStack.getNbtData();
             Tag esTag = tag.getValue().get("es");
             if (esTag instanceof CompoundTag) {
@@ -30,7 +31,8 @@ public class ESUtils {
     // プレイヤーが向いている先のブロック (コンフィグで最大範囲指定可能)
     @Nullable
     public static BlockVector3 getPlaceLocation(Player player) {
-        RayTraceResult rayResult = player.rayTraceBlocks(EasyStructure.INSTANCE.getConfig().getInt(Config.SETTING_PLACE_RANGE), FluidCollisionMode.NEVER);
+        int range = EasyStructure.INSTANCE.getConfig().getInt(Config.SETTING_PLACE_RANGE);
+        RayTraceResult rayResult = player.rayTraceBlocks(range, FluidCollisionMode.NEVER);
 
         if (rayResult == null)
             return null;

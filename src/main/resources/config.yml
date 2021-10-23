@@ -6,6 +6,9 @@ locale:
 place:
   range: 128
   log: false
+  message: true
+  customItem: false
+  preview: true
 global:
   auto updater:
     notify: true

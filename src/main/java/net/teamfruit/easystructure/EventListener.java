@@ -28,11 +28,14 @@ public class EventListener implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (final Player player : EasyStructure.INSTANCE.getServer().getOnlinePlayers()) {
-                    try {
-                        onEffect(player);
-                    } catch (Exception e) {
-                        Log.log.log(Level.WARNING, "Error while EasyStructure Guide Effect", e);
+                boolean bPreviewEnabled = EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_PREVIEW);
+                if (bPreviewEnabled) {
+                    for (final Player player : EasyStructure.INSTANCE.getServer().getOnlinePlayers()) {
+                        try {
+                            onEffect(player);
+                        } catch (Exception e) {
+                            Log.log.log(Level.WARNING, "Error while EasyStructure Guide Effect", e);
+                        }
                     }
                 }
             }
@@ -146,11 +149,17 @@ public class EventListener implements Listener {
             String title = ChatColor.stripColor(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
 
             // 設定でONのときログ出力
-            if (EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_LOG))
+            boolean bPlaceLog = EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_LOG);
+            if (bPlaceLog)
                 Log.log.log(Level.INFO, String.format("%s placed schematic ( %s : %s ) to (%d, %d, %d).", player.getName(), title, uuid, wPosition.getBlockX(), wPosition.getBlockY(), wPosition.getBlockZ()));
 
             // アクションバー
-            player.sendActionBar(I18n.format("action.success.actionbar", Integer.toHexString(random.nextInt(16))));
+            boolean bShowMessage = EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_MESSAGE);
+            if (bShowMessage)
+                player.sendActionBar(I18n.format("action.success.actionbar", Integer.toHexString(random.nextInt(16))));
+
+            // キャンセル
+            event.setCancelled(true);
 
         } catch (WorldEditException e) {
             Log.log.log(Level.WARNING, "WorldEdit Error: ", e);

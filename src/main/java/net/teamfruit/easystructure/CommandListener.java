@@ -16,6 +16,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.HandSide;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldedit.world.item.ItemTypes;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -293,10 +294,19 @@ public class CommandListener implements CommandExecutor, TabCompleter {
             // NBTにUUIDをセット (見た目もセット)
             CompoundTag tag = ESUtils.createWandItem(uuid, title);
 
+            // 手持ちのアイテムからアイテムタイプを取得
+            ItemType itemType = ItemTypes.BLAZE_ROD;
+            boolean bCustomItem = EasyStructure.INSTANCE.getConfig().getBoolean(Config.SETTING_PLACE_CUSTOM_ITEM);
+            if (bCustomItem) {
+                BaseItemStack offhandItem = wPlayer.getItemInHand(HandSide.MAIN_HAND);
+                itemType = (offhandItem.getType() != ItemTypes.AIR) ? offhandItem.getType() : ItemTypes.BLAZE_ROD;
+            }
+
             // アイテムを渡す
-            BaseItemStack itemStack = new BaseItemStack(ItemTypes.BLAZE_ROD, tag, 1);
+            BaseItemStack itemStack = new BaseItemStack(itemType, tag, 1);
             wPlayer.giveItem(itemStack);
 
+            // メッセージを表示
             player.sendMessage(I18n.format("command.success.created", (title != null ? "[" + title + "]" : "")));
 
         } catch (WorldEditException e) {
